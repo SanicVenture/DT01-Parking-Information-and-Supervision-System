@@ -1,2 +1,0 @@
-# Physical Object Detection
-tbd
