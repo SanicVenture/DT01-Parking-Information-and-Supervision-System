@@ -1,0 +1,15 @@
+C:\Users\jthum\source\repos\DT01-Parking-Information-and-Supervision-System\parking_availability_server\ParkingAvailabilityServer\bin\Debug\net8.0\ParkingAvailabilityServer.exe
+C:\Users\jthum\source\repos\DT01-Parking-Information-and-Supervision-System\parking_availability_server\ParkingAvailabilityServer\bin\Debug\net8.0\ParkingAvailabilityServer.deps.json
+C:\Users\jthum\source\repos\DT01-Parking-Information-and-Supervision-System\parking_availability_server\ParkingAvailabilityServer\bin\Debug\net8.0\ParkingAvailabilityServer.runtimeconfig.json
+C:\Users\jthum\source\repos\DT01-Parking-Information-and-Supervision-System\parking_availability_server\ParkingAvailabilityServer\bin\Debug\net8.0\ParkingAvailabilityServer.dll
+C:\Users\jthum\source\repos\DT01-Parking-Information-and-Supervision-System\parking_availability_server\ParkingAvailabilityServer\bin\Debug\net8.0\ParkingAvailabilityServer.pdb
+C:\Users\jthum\source\repos\DT01-Parking-Information-and-Supervision-System\parking_availability_server\ParkingAvailabilityServer\obj\Debug\net8.0\ParkingAvailabilityServer.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jthum\source\repos\DT01-Parking-Information-and-Supervision-System\parking_availability_server\ParkingAvailabilityServer\obj\Debug\net8.0\ParkingAvailabilityServer.AssemblyInfoInputs.cache
+C:\Users\jthum\source\repos\DT01-Parking-Information-and-Supervision-System\parking_availability_server\ParkingAvailabilityServer\obj\Debug\net8.0\ParkingAvailabilityServer.AssemblyInfo.cs
+C:\Users\jthum\source\repos\DT01-Parking-Information-and-Supervision-System\parking_availability_server\ParkingAvailabilityServer\obj\Debug\net8.0\ParkingAvailabilityServer.csproj.CoreCompileInputs.cache
+C:\Users\jthum\source\repos\DT01-Parking-Information-and-Supervision-System\parking_availability_server\ParkingAvailabilityServer\obj\Debug\net8.0\ParkingAvailabilityServer.sourcelink.json
+C:\Users\jthum\source\repos\DT01-Parking-Information-and-Supervision-System\parking_availability_server\ParkingAvailabilityServer\obj\Debug\net8.0\ParkingAvailabilityServer.dll
+C:\Users\jthum\source\repos\DT01-Parking-Information-and-Supervision-System\parking_availability_server\ParkingAvailabilityServer\obj\Debug\net8.0\refint\ParkingAvailabilityServer.dll
+C:\Users\jthum\source\repos\DT01-Parking-Information-and-Supervision-System\parking_availability_server\ParkingAvailabilityServer\obj\Debug\net8.0\ParkingAvailabilityServer.pdb
+C:\Users\jthum\source\repos\DT01-Parking-Information-and-Supervision-System\parking_availability_server\ParkingAvailabilityServer\obj\Debug\net8.0\ParkingAvailabilityServer.genruntimeconfig.cache
+C:\Users\jthum\source\repos\DT01-Parking-Information-and-Supervision-System\parking_availability_server\ParkingAvailabilityServer\obj\Debug\net8.0\ref\ParkingAvailabilityServer.dll
