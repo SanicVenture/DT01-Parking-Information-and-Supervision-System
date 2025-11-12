@@ -1,5 +1,10 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using ParkingAvailabilityServer;
+
 Console.WriteLine("Hello, World!");
+DatabaseManager dbManager = new();
+
+dbManager.CreateTable();
 
 
 public struct ParkingLotState(bool newvehicle, bool newobstructed)
@@ -12,4 +17,3 @@ public struct ParkingLotState(bool newvehicle, bool newobstructed)
         return [vehicle, obstructed];
     }
 }
-
