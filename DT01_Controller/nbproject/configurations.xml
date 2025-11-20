@@ -7,12 +7,41 @@
       <logicalFolder name="MCC Generated Files"
                      displayName="MCC Generated Files"
                      projectFiles="true">
+        <logicalFolder name="drivers" displayName="drivers" projectFiles="true">
+          <itemPath>mcc_generated_files/drivers/spi_master.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="TCPIPLibrary"
+                       displayName="TCPIPLibrary"
+                       projectFiles="true">
+          <itemPath>mcc_generated_files/TCPIPLibrary/icmp.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/ethernet_driver.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/mac_address.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/ENCx24J600_spi.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/ENCx24J600_types.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/ipv4.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/ip_database.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/dhcp_client.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/tcpv4.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/tcpip_config.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/tcpip_types.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/network.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/rtcc.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/lfsr.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/log.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/log_console.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/log_syslog.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/arpv4.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/udpv4.h</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/udpv4_port_handler_table.h</itemPath>
+        </logicalFolder>
         <itemPath>mcc_generated_files/eth.h</itemPath>
         <itemPath>mcc_generated_files/pin_manager.h</itemPath>
         <itemPath>mcc_generated_files/mcc.h</itemPath>
         <itemPath>mcc_generated_files/device_config.h</itemPath>
         <itemPath>mcc_generated_files/eusart1.h</itemPath>
         <itemPath>mcc_generated_files/interrupt_manager.h</itemPath>
+        <itemPath>mcc_generated_files/spi1.h</itemPath>
+        <itemPath>mcc_generated_files/tmr1.h</itemPath>
       </logicalFolder>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
@@ -31,12 +60,42 @@
       <logicalFolder name="MCC Generated Files"
                      displayName="MCC Generated Files"
                      projectFiles="true">
+        <logicalFolder name="docs" displayName="docs" projectFiles="true">
+          <itemPath>mcc_generated_files/docs/spi.dox</itemPath>
+          <itemPath>mcc_generated_files/docs/spi_basic.dox</itemPath>
+        </logicalFolder>
+        <logicalFolder name="drivers" displayName="drivers" projectFiles="true">
+          <itemPath>mcc_generated_files/drivers/spi_master.c</itemPath>
+        </logicalFolder>
+        <logicalFolder name="TCPIPLibrary"
+                       displayName="TCPIPLibrary"
+                       projectFiles="true">
+          <itemPath>mcc_generated_files/TCPIPLibrary/icmp.c</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/mac_address.c</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/ENCx24J600_driver.c</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/ENCx24J600_spi.c</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/ipv4.c</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/ip_database.c</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/dhcp_client.c</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/tcpv4.c</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/network.c</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/rtcc.c</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/lfsr.c</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/log.c</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/log_console.c</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/log_syslog.c</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/arpv4.c</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/udpv4_port_handler_table.c</itemPath>
+          <itemPath>mcc_generated_files/TCPIPLibrary/udpv4.c</itemPath>
+        </logicalFolder>
         <itemPath>mcc_generated_files/eth.c</itemPath>
         <itemPath>mcc_generated_files/pin_manager.c</itemPath>
         <itemPath>mcc_generated_files/mcc.c</itemPath>
         <itemPath>mcc_generated_files/device_config.c</itemPath>
         <itemPath>mcc_generated_files/eusart1.c</itemPath>
         <itemPath>mcc_generated_files/interrupt_manager.c</itemPath>
+        <itemPath>mcc_generated_files/spi1.c</itemPath>
+        <itemPath>mcc_generated_files/tmr1.c</itemPath>
       </logicalFolder>
       <itemPath>main.c</itemPath>
     </logicalFolder>
@@ -49,7 +108,7 @@
         <targetDevice>PIC18F67J60</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>PICkit3PlatformTool</platformTool>
+        <platformTool></platformTool>
         <languageToolchain>XC8</languageToolchain>
         <languageToolchainVersion>3.10</languageToolchainVersion>
         <platform>3</platform>

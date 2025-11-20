@@ -51,10 +51,13 @@ void SYSTEM_Initialize(void)
 {
 
     INTERRUPT_Initialize();
+    SPI1_Initialize();
     PIN_MANAGER_Initialize();
     OSCILLATOR_Initialize();
+    TMR1_Initialize();
     EUSART1_Initialize();
     ETH_Initialize();
+    Network_Init();
 }
 
 void OSCILLATOR_Initialize(void)

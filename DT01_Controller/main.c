@@ -99,18 +99,21 @@ void main(void)
     rLED=0;
     gLED=0;
     //printf("%s","I am Testing microcontroller");
+    uint8_t occupied=0;
     
     while (1)
     {
         // Add your application code
-        //int dist = calc_dist();
+        int dist = calc_dist();
         
-        if (calc_dist() <= 512){
+        if (dist <= 512){
             rLED=1;
             gLED=0;
+            occupied=1;
         } else {
             rLED=0;
             gLED=1;
+            occupied=0;
         }
         
         //putch('D');

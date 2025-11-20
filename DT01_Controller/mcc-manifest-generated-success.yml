@@ -2,7 +2,7 @@
 
 manifest_file_version: 1.0.0
 project: DT01_Controller
-creation_date: 2025-11-19T18:25:51.536-05:00[America/New_York]
+creation_date: 2025-11-20T16:13:11.258-05:00[America/New_York]
 operating_system: Windows 11
 mcc_mode: IDE
 mcc_mode_version: v6.25
@@ -19,3 +19,6 @@ device_library: {library_class: com.microchip.mcc.mcu8.Mcu8PeripheralLibrary, na
 packs: {name: N/A, version: N/A}
 modules:
 - {name: com.microchip.mcc.mcu8.Mcu8PeripheralLibrary, type: CLASSIC, version: 1.82.1}
+- {name: com.microchip.mcc.TCPIPLite.TCPIPLite, type: CLASSIC, version: 2.2.13}
+- {name: com.microchip.mcc.foundationservices.library.FoundationServicesLibrary, type: CLASSIC,
+  version: 0.2.3}
