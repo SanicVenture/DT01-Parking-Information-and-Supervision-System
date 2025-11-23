@@ -1,0 +1,40 @@
+@NewParkingAvailabilityServer_HostAddress = https://localhost:7288
+
+GET {{NewParkingAvailabilityServer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+POST {{NewParkingAvailabilityServer_HostAddress}}/api/todoitems
+Content-Type: application/json
+
+{
+  "floor": 8,
+  "occupied": true
+}
+
+###
+
+GET {{NewParkingAvailabilityServer_HostAddress}}/api/todoitems
+
+###
+
+@id=1
+GET {{NewParkingAvailabilityServer_HostAddress}}/api/todoitems/{{id}}
+
+###
+
+PUT {{NewParkingAvailabilityServer_HostAddress}}/api/todoitems/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "floor": 2,
+  "occupied": false
+}
+
+###
+
+DELETE {{NewParkingAvailabilityServer_HostAddress}}/api/todoitems/{{id}}
+
+###
