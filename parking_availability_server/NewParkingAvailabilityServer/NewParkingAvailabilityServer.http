@@ -5,36 +5,64 @@ Accept: application/json
 
 ###
 
-POST {{NewParkingAvailabilityServer_HostAddress}}/api/todoitems
+POST {{NewParkingAvailabilityServer_HostAddress}}/api/parkingspaceitems
 Content-Type: application/json
 
 {
   "floor": 8,
-  "occupied": true
+  "occupied": true,
+  "maintenanceAlert": false
 }
 
 ###
 
-GET {{NewParkingAvailabilityServer_HostAddress}}/api/todoitems
+GET {{NewParkingAvailabilityServer_HostAddress}}/api/parkingspaceitems
 
 ###
 
 @id=1
-GET {{NewParkingAvailabilityServer_HostAddress}}/api/todoitems/{{id}}
+GET {{NewParkingAvailabilityServer_HostAddress}}/api/parkingspaceitems/{{id}}
 
 ###
 
-PUT {{NewParkingAvailabilityServer_HostAddress}}/api/todoitems/1
+PUT {{NewParkingAvailabilityServer_HostAddress}}/api/parkingspaceitems/1
 Content-Type: application/json
 
 {
   "id": 1,
   "floor": 2,
-  "occupied": false
+  "occupied": false,
+  "maintenanceAlert": true
+}
+
+###
+@id=6
+DELETE {{NewParkingAvailabilityServer_HostAddress}}/api/parkingspaceitems/{{id}}
+
+###
+
+POST {{NewParkingAvailabilityServer_HostAddress}}/api/parkingspaceitems
+Content-Type: application/json
+
+{
+  "floor": 3,
+  "occupied": true,
+  "maintenanceAlert": true
 }
 
 ###
 
-DELETE {{NewParkingAvailabilityServer_HostAddress}}/api/todoitems/{{id}}
+POST {{NewParkingAvailabilityServer_HostAddress}}/api/pstotalresultsitems
+Content-Type: application/json
+
+{
+  ""vehicle": true,
+  "objectInSpace": true,
+  "parkingSpaceObstructed": true"
+}
+
+###
+
+GET {{NewParkingAvailabilityServer_HostAddress}}/api/pstotalresultsitems
 
 ###

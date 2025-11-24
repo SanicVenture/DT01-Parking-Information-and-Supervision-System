@@ -7,7 +7,6 @@ void main() {
 
 class MyApp extends StatelessWidget {
   MyApp({super.key});
-  final List<List<dynamic>> parkingSpaces = List.generate(2, (i) => [HeadingItem("0"), MessageItem("pizza", "0")]);
 
   // This widget is the root of your application.
   @override
@@ -32,7 +31,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page', parkingSpaces: parkingSpaces),
+      home: MyHomePage(title: 'Parking Lot Entrance Information'),
     );
   }
 }
@@ -72,8 +71,10 @@ class MessageItem implements ListItem {
   Widget buildSubtitle(BuildContext context) => Text(body);
 }
 
+
+
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title, required this.parkingSpaces});
+  const MyHomePage({super.key, required this.title});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -85,7 +86,6 @@ class MyHomePage extends StatefulWidget {
   // always marked "final".
 
   final String title;
-  final List<List<dynamic>> parkingSpaces;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -93,6 +93,17 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  // late Future<ParkingSpace> futureParkingSpace;
+  late Future<List<ParkingSpace>> futureParkingSpaces;
+
+  @override
+  void initState() {
+    super.initState();
+    // futureParkingSpace = fetchParkingSpace();
+    futureParkingSpaces = fetchParkingSpaces();
+
+  }
+
 
   void _incrementCounter() {
     setState(() {
@@ -101,7 +112,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      _counter++;
+      futureParkingSpaces = fetchParkingSpaces();
     });
   }
 
@@ -123,19 +134,56 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: ListView.builder(
-        itemCount: widget.parkingSpaces.length,
 
-        itemBuilder: (context, index) {
-          final item = widget.parkingSpaces[index];
+      body: FutureBuilder<List<ParkingSpace>>(
+        future: futureParkingSpaces,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final parkingSpaces = snapshot.data!;
+            final List<List<ParkingSpace>> ByFloorList = [];
+            final List<int> AvailablePerFloor = [];
+            int maxFloor = 0;
+            parkingSpaces.forEach((space) {
+              if (space.floor > maxFloor) {
+                maxFloor = space.floor;
+              }
+            });
 
-          return ListTile(
-            title: item[0].buildTitle(context),
-            subtitle: item[0].buildSubtitle(context),
+            for (var i = 1; i <= maxFloor; i++) {
+              ByFloorList.add(parkingSpaces.where((space) => space.floor == i).toList());
+            }
 
-          );
-        }
+            ByFloorList.forEach((floor) {
+              final availableCount = floor.where((space) => !space.occupied).length;
+              AvailablePerFloor.add(availableCount);
+            });
+
+
+            return ListView.builder(
+              itemCount: ByFloorList.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text('Floor: ${index + 1}'),
+                  subtitle: Text('Available Spots: ${AvailablePerFloor[index]}'),
+                );
+              },
+            );
+          } else if (snapshot.hasError) {
+            return Center(child: Text('${snapshot.error}'));
+          }
+
+          // By default, show a loading spinner.
+          return const Center(child: CircularProgressIndicator());
+        },
       ),
+
+      // body: Row(children: <Widget>[
+
+
+        
+      // ],)
+      // ,
+
       // body: Center(
       //   // Center is a layout widget. It takes a single child and positions it
       //   // in the middle of the parent.
@@ -165,8 +213,8 @@ class _MyHomePageState extends State<MyHomePage> {
       // ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        tooltip: 'Reload',
+        child: const Icon(Icons.replay),
       ),
     );
   }
