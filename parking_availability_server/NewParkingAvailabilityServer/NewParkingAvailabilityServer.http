@@ -56,8 +56,8 @@ POST {{NewParkingAvailabilityServer_HostAddress}}/api/pstotalresultsitems
 Content-Type: application/json
 
 {
-  ""vehicle": true,
-  "objectInSpace": true,
+  "vehicle": true,
+  "objectInSpot": true,
   "parkingSpaceObstructed": true"
 }
 

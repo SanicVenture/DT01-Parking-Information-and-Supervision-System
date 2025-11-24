@@ -55,21 +55,21 @@ Future<void> createNewParkingSpace() async {
   }
 }
 
-// Future<void> createNewPSFinal() async {
-//   final response = await http.post(
-//     Uri.parse('https://localhost:7288/api/pstotalresultsitems'),
-//     headers: <String, String>{
-//       'Content-Type': 'application/json; charset=UTF-8',
-//     },
-//     body: jsonEncode(<String, dynamic>{
-//       'floor': 5,
-//       'occupied': false,
-//       'maintenanceAlert': false
-//     }),
-//   );
+Future<void> createNewPSFinal(String vehicle, String objectinspace, String parkingspaceobstructed) async {
+  final response = await http.post(
+    Uri.parse('https://localhost:7288/api/pstotalresultsitems'),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(<String, dynamic>{
+      'vehicle': vehicle == 'True' ? true : false,
+      'objectinspot': objectinspace == 'True' ? true : false,
+      'parkingspaceobstructed': parkingspaceobstructed == 'True' ? true : false,
+    }),
+  );
 
-//   if (response.statusCode != 201) {
-//     throw Exception('Failed to send maintenance alert');
-//   }
-// }
+  if (response.statusCode != 201) {
+    throw Exception('Failed to send maintenance alert');
+  }
+}
 

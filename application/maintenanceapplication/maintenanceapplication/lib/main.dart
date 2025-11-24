@@ -36,58 +36,93 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class SecondRoute extends StatelessWidget {
-  const SecondRoute({super.key});
+class SecondRoute extends StatefulWidget {
+  SecondRoute({super.key});
+  
+  @override
+  State<StatefulWidget> createState() => _SecondRouteState();
+}
+
+class _SecondRouteState extends State<SecondRoute> {
+
+  final List<String> trueOrFalse = ['True', 'False'];
+
+  String? selectedvalue1 = 'True';
+  String? selectedvalue2 = 'True';
+  String? selectedvalue3 = 'True';
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Second Route'),
+        title: const Text('Parking Spot Simulation'),
       ),
-      body: const Center(
-        child: Text('This is the second route'),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Select Vehicle Status:'),
+            DropdownButton<String>(
+              value: selectedvalue1,
+              items: trueOrFalse.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  selectedvalue1 = newValue;
+                });
+              },
+            ),
+            Text('Select Vehicle Status:'),
+            DropdownButton<String>(
+              value: selectedvalue2,
+              items: trueOrFalse.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  selectedvalue2 = newValue;
+                });
+              },
+            ),
+            Text('Select Vehicle Status:'),
+            DropdownButton<String>(
+              value: selectedvalue3,
+              items: trueOrFalse.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  selectedvalue3 = newValue;
+                });
+              },
+            ),
+            ElevatedButton(
+              onPressed: () {
+                createNewPSFinal(
+                  selectedvalue1 ?? 'False',
+                  selectedvalue2 ?? 'False',
+                  selectedvalue3 ?? 'False'
+                );
+              },
+              child: const Text('Send Statuses!'),
+            ),
+          ],
+        )
       ),
     );
   }
 }
-
-abstract class ListItem {
-
-  Widget buildTitle(BuildContext context);
-
-  Widget buildSubtitle(BuildContext context);
-
-}
-
-class HeadingItem implements ListItem {
-  final String heading; 
-
-  HeadingItem(this.heading);
-
-  @override
-  Widget buildTitle(BuildContext context) {
-    return Text(heading, style: Theme.of(context).textTheme.headlineSmall);
-  }
-  
-  @override
-  Widget buildSubtitle(BuildContext context) => const SizedBox.shrink();
-}
-
-class MessageItem implements ListItem {
-  final String sender;
-  final String body;
-
-  MessageItem(this.sender, this.body);
-
-  @override
-  Widget buildTitle(BuildContext context) => Text(sender);
-
-  @override
-  Widget buildSubtitle(BuildContext context) => Text(body);
-}
-
-
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -176,7 +211,7 @@ class _MyHomePageState extends State<MyHomePage> {
               title: const Text('Subsystem Demo Menu'),
               onTap: () {
                 Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const SecondRoute()),
+                  MaterialPageRoute(builder: (context) => SecondRoute()),
                 );
               },
             ),
