@@ -77,7 +77,7 @@ class _SecondRouteState extends State<SecondRoute> {
                 });
               },
             ),
-            Text('Select Vehicle Status:'),
+            Text('Select if Object in Spot:'),
             DropdownButton<String>(
               value: selectedvalue2,
               items: trueOrFalse.map((String value) {
@@ -92,7 +92,7 @@ class _SecondRouteState extends State<SecondRoute> {
                 });
               },
             ),
-            Text('Select Vehicle Status:'),
+            Text('Select Parking Space Obstructed:'),
             DropdownButton<String>(
               value: selectedvalue3,
               items: trueOrFalse.map((String value) {

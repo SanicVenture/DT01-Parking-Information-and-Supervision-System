@@ -6,5 +6,39 @@
         public bool vehicle { get; set; }
         public bool objectInSpot { get; set; }
         public bool parkingSpaceObstructed { get; set; }
+
+        public ParkingSpaceItem convertedSpot { get; set; }
+
+        public PSTotalResultsItem(int id, bool vehicle, bool objectInSpot, bool parkingSpaceObstructed)
+        {
+            Id = id;
+            this.vehicle = vehicle;
+            this.objectInSpot = objectInSpot;
+            this.parkingSpaceObstructed = parkingSpaceObstructed;
+            convertPSTotalResultsItem();
+        }
+
+        public void convertPSTotalResultsItem()
+        {
+            bool maintenanceState = false;
+
+            if (objectInSpot)
+            {
+                maintenanceState = !parkingSpaceObstructed || !vehicle;
+            }
+            if (!objectInSpot)
+            {
+                maintenanceState = parkingSpaceObstructed;
+            }
+
+            convertedSpot = new ParkingSpaceItem(
+                Id,
+                -1,
+                objectInSpot,
+                maintenanceState
+            );
+        }
+
+
     }
 }

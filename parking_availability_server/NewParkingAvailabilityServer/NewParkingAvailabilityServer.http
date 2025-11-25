@@ -58,11 +58,23 @@ Content-Type: application/json
 {
   "vehicle": true,
   "objectInSpot": true,
-  "parkingSpaceObstructed": true"
+  "parkingSpaceObstructed": true
 }
 
 ###
 
 GET {{NewParkingAvailabilityServer_HostAddress}}/api/pstotalresultsitems
+
+###
+
+PUT {{NewParkingAvailabilityServer_HostAddress}}/api/pstotalresultsitems/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "vehicle": true,
+  "objectInSpot": true,
+  "parkingSpaceObstructed": true
+}
 
 ###

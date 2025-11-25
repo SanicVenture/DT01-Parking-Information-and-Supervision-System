@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NewParkingAvailabilityServer.Models;
+using NewParkingAvailabilityServer;
 
 namespace NewParkingAvailabilityServer.Controllers
 {
@@ -9,6 +10,9 @@ namespace NewParkingAvailabilityServer.Controllers
     public class PSTotalResultsController : ControllerBase
     {
         private readonly PSTotalResultsContext _context;
+
+        private SQLManager sQLManager = new SQLManager();
+
 
         public PSTotalResultsController(PSTotalResultsContext context)
         {
@@ -63,6 +67,8 @@ namespace NewParkingAvailabilityServer.Controllers
                     throw;
                 }
             }
+
+            sQLManager.ChangeSpotFromFinalState(id);
 
             return NoContent();
         }
