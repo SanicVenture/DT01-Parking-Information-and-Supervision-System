@@ -1,5 +1,11 @@
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+final String localUrl = 'https://localhost:7288/api';
+final String remoteUrl = 'https://192.168.1.31:3124/api';
+final bool isAndroid = Platform.isAndroid;
+final bool isDesktop = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
 class ParkingSpace {
   final int id;
@@ -25,7 +31,7 @@ class ParkingSpace {
 
 Future<List<ParkingSpace>> fetchParkingSpaces() async {
   final response =
-      await http.get(Uri.parse('https://localhost:7288/api/parkingspaceitems/'));
+      await http.get(Uri.parse('${isAndroid ? remoteUrl : localUrl}/parkingspaceitems/'));
 
   if (response.statusCode == 200) {
     final List<dynamic> jsonList = jsonDecode(response.body);
@@ -39,7 +45,7 @@ Future<List<ParkingSpace>> fetchParkingSpaces() async {
 
 Future<void> createNewParkingSpace() async {
   final response = await http.post(
-    Uri.parse('https://localhost:7288/api/parkingspaceitems'),
+    Uri.parse('${isAndroid ? remoteUrl : localUrl}/parkingspaceitems'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
@@ -55,21 +61,41 @@ Future<void> createNewParkingSpace() async {
   }
 }
 
-Future<void> createNewPSFinal(String vehicle, String objectinspace, String parkingspaceobstructed) async {
-  final response = await http.post(
-    Uri.parse('https://localhost:7288/api/pstotalresultsitems'),
+// Future<void> createNewPSFinal(String vehicle, String objectinspace, String parkingspaceobstructed) async {
+//   final response = await http.post(
+//     Uri.parse('${isAndroid ? remoteUrl : localUrl}/pstotalresultsitems'),
+//     headers: <String, String>{
+//       'Content-Type': 'application/json; charset=UTF-8',
+//     },
+//     body: jsonEncode(<String, dynamic>{
+//       'vehicle': vehicle == 'True' ? true : false,
+//       'objectinspot': objectinspace == 'True' ? true : false,
+//       'parkingspaceobstructed': parkingspaceobstructed == 'True' ? true : false,
+//     }),
+//   );
+
+//   if (response.statusCode != 201) {
+//     throw Exception('Failed to send maintenance alert');
+//   }
+// }
+
+Future<void> createNewPSFinal(int Id, String vehicle, String objectinspace, String parkingspaceobstructed) async {
+  final response = await http.put(
+    Uri.parse('${isAndroid ? remoteUrl : localUrl}/pstotalresultsitems/$Id'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
     body: jsonEncode(<String, dynamic>{
+      'id': Id,
       'vehicle': vehicle == 'True' ? true : false,
       'objectinspot': objectinspace == 'True' ? true : false,
       'parkingspaceobstructed': parkingspaceobstructed == 'True' ? true : false,
     }),
   );
 
-  if (response.statusCode != 201) {
+  if (response.statusCode != 204) {
     throw Exception('Failed to send maintenance alert');
   }
 }
+
 

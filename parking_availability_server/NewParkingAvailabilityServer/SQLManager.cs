@@ -10,13 +10,13 @@ namespace NewParkingAvailabilityServer
 
         public void ChangeSpotFromFinalState(long id)
         {
-            PSTotalResultsItem currentItem;
+            PSTotalResultsItem? currentItem = null;
 
             using (var conn = new SqliteConnection(psfinalconnectionString))
             {
                 conn.Open();
                 var command = conn.CreateCommand();
-                command.CommandText = $"SELECT * FROM PSTotalResultsItems LIMIT 1 OFFSET {id-1};";
+                command.CommandText = $"SELECT * FROM PSTotalResultsItems WHERE Id={id};";
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -30,15 +30,45 @@ namespace NewParkingAvailabilityServer
                     }
                 }
             }
-
-            using (var conn = new SqliteConnection(connectionString))
+            if (currentItem is not null)
             {
-                conn.Open();
-                var command = conn.CreateCommand();
-                command.CommandText = $"";
+                try
+                { 
+                    using (var conn = new SqliteConnection(connectionString))
+                    {
+                        conn.Open();
+                        var command = conn.CreateCommand();
+                        command.CommandText = $"UPDATE ParkingSpaceItems SET " +
+                            $"occupied={currentItem.convertedSpot.occupied}, " +
+                            $"maintenanceAlert={currentItem.convertedSpot.maintenanceAlert} " +
+                            $"WHERE id={currentItem.Id}";
+                        command.ExecuteNonQuery();
+                    }
+                }
+                catch (SqliteException ex)
+                {
+                
+                }
             }
+        }
 
+        public async Task createnewPSTotalEntry(PSTotalResultsItem todoItem)
+        {
+            try
+            {
+                using (var conn = new SqliteConnection(psfinalconnectionString))
+                {
+                    conn.Open();
+                    var command = conn.CreateCommand();
+                    command.CommandText = $"INSERT INTO PSTotalResultsItems " +
+                        $"VALUES ({todoItem.Id}, {todoItem.vehicle}, {todoItem.objectInSpot}, {todoItem.parkingSpaceObstructed})";
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (SqliteException ex)
+            {
 
+            }
         }
     }
 }

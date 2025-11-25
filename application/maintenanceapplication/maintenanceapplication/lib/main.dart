@@ -1,7 +1,18 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:maintenanceapplication/httpmanager.dart';
 
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+  }
+}
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  HttpOverrides.global = MyHttpOverrides(); // Apply the override
   runApp(MyApp());
 }
 
@@ -50,6 +61,7 @@ class _SecondRouteState extends State<SecondRoute> {
   String? selectedvalue1 = 'True';
   String? selectedvalue2 = 'True';
   String? selectedvalue3 = 'True';
+  int selectedvalue4 = 0;
 
 
   @override
@@ -62,6 +74,15 @@ class _SecondRouteState extends State<SecondRoute> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Text('Select Parking Space Id:'),
+            TextField(
+              keyboardType: TextInputType.number,
+              onChanged: (value) {
+                setState(() {
+                  selectedvalue4 = int.tryParse(value) ?? 0;
+                });
+              },
+            ),
             Text('Select Vehicle Status:'),
             DropdownButton<String>(
               value: selectedvalue1,
@@ -110,6 +131,7 @@ class _SecondRouteState extends State<SecondRoute> {
             ElevatedButton(
               onPressed: () {
                 createNewPSFinal(
+                  selectedvalue4,
                   selectedvalue1 ?? 'False',
                   selectedvalue2 ?? 'False',
                   selectedvalue3 ?? 'False'
@@ -145,15 +167,26 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   // late Future<ParkingSpace> futureParkingSpace;
   late Future<List<ParkingSpace>> futureParkingSpaces;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     // futureParkingSpace = fetchParkingSpace();
     futureParkingSpaces = fetchParkingSpaces();
+    _timer = Timer.periodic(const Duration(seconds: 10), (Timer t) {
+      setState(() {
+        futureParkingSpaces = fetchParkingSpaces();
+      });
+    });
 
   }
 
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   void _addParkingSpace() async {
     await createNewParkingSpace();

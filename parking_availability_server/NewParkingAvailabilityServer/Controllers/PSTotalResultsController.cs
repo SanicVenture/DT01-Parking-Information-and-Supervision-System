@@ -45,9 +45,14 @@ namespace NewParkingAvailabilityServer.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPSTotalResultsItem(long id, PSTotalResultsItem todoItem)
         {
+
             if (id != todoItem.Id)
             {
                 return BadRequest();
+            }
+            if (!PSTotalResultsItemExists(id))
+            {
+                await sQLManager.createnewPSTotalEntry(todoItem);
             }
 
             _context.Entry(todoItem).State = EntityState.Modified;
