@@ -47,10 +47,20 @@
                          Main application
  */
 
+/*
+ * Senior Design Team 1
+ * University of Akron
+ * Department of Electrical and Computer Engineering
+ * Members: Jacob Dye, Alex Kinch, and Josh Thum
+ * Project: Ultrasonic Parking Sensor (Parking Information Supervision System)
+ * Objective: To sense vehicles and light a status light to match.
+ */
+
 //define macros for ultrasonic senor
 #define trigger RA3
 #define echo    RB5
 
+//define macros for red and green LEDs
 #define rLED    RB1
 #define gLED    RB2
 
@@ -91,34 +101,38 @@ void main(void)
 
     // Disable the Peripheral Interrupts
     //INTERRUPT_PeripheralInterruptDisable();
-    //int distance = calc_distance();
+    
     rLED=1;
     gLED=1;
-    //_delay((unsigned long)(0.5*32000/4));
     __delay_ms(500);
     rLED=0;
     gLED=0;
-    //printf("%s","I am Testing microcontroller");
+
+    // define variables needed in while loop so they are global
     uint8_t occupied=0;
+    uint8_t error=0;
     
     while (1)
     {
-        // Add your application code
+        // loop for checking status and setting lights accordingly
         int dist = calc_dist();
         
         if (dist <= 512){
             rLED=1;
             gLED=0;
             occupied=1;
+            if (error == 1){
+                gLED=1;
+            }
         } else {
             rLED=0;
             gLED=1;
             occupied=0;
+            if (error == 1){
+                rLED=1;
+            }
         }
         
-        //putch('D');
-        //putch('i');
-        //printf("stance: %i\n", calc_dist());
         __delay_ms(250);
     }
 }
@@ -126,12 +140,16 @@ void main(void)
 // Definition Of The calc_dist() Function
 int calc_dist(void)
 {
+  // define required variables
   unsigned long int distance=0;
   unsigned long int timer=0;
+  // set timer to zero
   TMR1=0;
   // Send Trigger Pulse To The Sensor
   trigger=1;
+  // pulse is 10 us long
   __delay_us(10);
+  // turn off pulse
   trigger=0;
   // Wait For The Echo Pulse From The Sensor
   while(!echo);
@@ -143,10 +161,8 @@ int calc_dist(void)
   TMR1ON=0;
   // Calculate The Distance Using The Equation
   distance=TMR1/58.82;
-  //distance=TMR1/59;
   timer=TMR1;
   
-  //printf("%lu", timer);
   return distance;
 }
 
