@@ -10,7 +10,6 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddDbContext<ParkingSpaceContext>(opt => opt.UseSqlite(builder.Configuration.GetConnectionString("SQLiteConnection")));
 builder.Services.AddDbContext<PSTotalResultsContext>(opt => opt.UseSqlite(builder.Configuration.GetConnectionString("SecondConnection")));
-//builder.Services.AddDbContext<PSTotalResultsContext>(opt => opt.UseInMemoryDatabase("TodoList"));
 
 var app = builder.Build();
 

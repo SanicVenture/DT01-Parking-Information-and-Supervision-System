@@ -29,17 +29,6 @@ class ParkingSpace {
   }
 }
 
-// Future<ParkingSpace> fetchParkingSpace() async {
-//   final response =
-//       await http.get(Uri.parse('https://localhost:7288/api/parkingspaceitems/1'));
-
-//   if (response.statusCode == 200) {
-//     return ParkingSpace.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
-//   } else {
-//     throw Exception('Failed to load parking space');
-//   }
-// }
-
 Future<List<ParkingSpace>> fetchParkingSpaces() async {
   final response =
       await http.get(Uri.parse(isAndroid ? remoteUrl : localUrl));

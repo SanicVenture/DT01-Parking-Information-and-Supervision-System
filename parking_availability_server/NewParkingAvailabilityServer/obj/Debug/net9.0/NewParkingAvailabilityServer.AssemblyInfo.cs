@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NewParkingAvailabilityServer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+86e3bc510dd371f56ce8ed44d9412338e2aefdae")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+74477a4f4a04351192bffb732084870a59710cc0")]
 [assembly: System.Reflection.AssemblyProductAttribute("NewParkingAvailabilityServer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NewParkingAvailabilityServer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
