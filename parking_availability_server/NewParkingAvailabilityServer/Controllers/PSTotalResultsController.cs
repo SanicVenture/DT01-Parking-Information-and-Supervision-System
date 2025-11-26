@@ -19,14 +19,14 @@ namespace NewParkingAvailabilityServer.Controllers
             _context = context;
         }
 
-        // GET: api/PSTotalResultsItems
+        // GET: api/pstotalresultsitems
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PSTotalResultsItem>>> GetPSTotalResultsItems()
         {
             return await _context.PSTotalResultsItems.ToListAsync();
         }
 
-        // GET: api/PSTotalResultsItems/5
+        // GET: api/pstotalresultsitems
         [HttpGet("{id}")]
         public async Task<ActionResult<PSTotalResultsItem>> GetPSTotalResultsItem(long id)
         {
@@ -40,7 +40,7 @@ namespace NewParkingAvailabilityServer.Controllers
             return todoItem;
         }
 
-        // PUT: api/PSTotalResultsItem/5
+        // PUT: api/pstotalresultsitem
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPSTotalResultsItem(long id, PSTotalResultsItem todoItem)
@@ -78,7 +78,7 @@ namespace NewParkingAvailabilityServer.Controllers
             return NoContent();
         }
 
-        // POST: api/PSTotalResultsItems
+        // POST: api/pstotalresultsitems
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<ParkingSpaceItem>> PostPSTotalResultsItem(PSTotalResultsItem todoItem)
@@ -89,7 +89,7 @@ namespace NewParkingAvailabilityServer.Controllers
             return CreatedAtAction(nameof(GetPSTotalResultsItem), new { id = todoItem.Id }, todoItem);
         }
 
-        // DELETE: api/PSTotalResultsItems/5
+        // DELETE: api/pstotalresultsitems/id
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteParkingSpaceItem(long id)
         {

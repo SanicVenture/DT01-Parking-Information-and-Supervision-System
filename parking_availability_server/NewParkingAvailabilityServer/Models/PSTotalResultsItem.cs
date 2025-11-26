@@ -9,6 +9,18 @@
 
         public ParkingSpaceItem convertedSpot { get; set; }
 
+        public PSTotalResultsItem(OpenCVResultsItem openCVResultsItem, ObjectInSpotItem objectInSpotItem)
+        {
+            if (openCVResultsItem.Id == objectInSpotItem.Id)
+            {
+                Id = openCVResultsItem.Id;
+                vehicle = openCVResultsItem.vehicle;
+                objectInSpot = objectInSpotItem.objectInSpot;
+                parkingSpaceObstructed = openCVResultsItem.parkingSpaceObstructed;
+                convertPSTotalResultsItem();
+            }
+        }
+
         public PSTotalResultsItem(int id, bool vehicle, bool objectInSpot, bool parkingSpaceObstructed)
         {
             Id = id;

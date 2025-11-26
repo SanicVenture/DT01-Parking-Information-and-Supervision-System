@@ -130,6 +130,159 @@ class _SecondRouteState extends State<SecondRoute> {
   }
 }
 
+// object in spot code
+
+class ObjectInSpotRoute extends StatefulWidget {
+  ObjectInSpotRoute({super.key});
+  
+  @override
+  State<StatefulWidget> createState() => _ObjectInSpotRouteState();
+}
+
+class _ObjectInSpotRouteState extends State<ObjectInSpotRoute> {
+
+  final List<String> trueOrFalse = ['True', 'False'];
+
+  String? selectedvalue2 = 'True';
+  int selectedvalue4 = 0;
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Parking Spot Simulation'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Select Parking Space Id:'),
+            TextField(
+              keyboardType: TextInputType.number,
+              onChanged: (value) {
+                setState(() {
+                  selectedvalue4 = int.tryParse(value) ?? 0;
+                });
+              },
+            ),
+            Text('Select if Object in Spot:'),
+            DropdownButton<String>(
+              value: selectedvalue2,
+              items: trueOrFalse.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  selectedvalue2 = newValue;
+                });
+              },
+            ),
+            ElevatedButton(
+              onPressed: () {
+                addObjectInSpotState(
+                  selectedvalue4,
+                  selectedvalue2 ?? 'False'
+                );
+              },
+              child: const Text('Send Statuses!'),
+            ),
+          ],
+        )
+      ),
+    );
+  }
+}
+
+// open cv result code
+
+class OpenCVResultRoute extends StatefulWidget {
+  OpenCVResultRoute({super.key});
+  
+  @override
+  State<StatefulWidget> createState() => _OpenCVResultRouteState();
+}
+
+class _OpenCVResultRouteState extends State<OpenCVResultRoute> {
+
+  final List<String> trueOrFalse = ['True', 'False'];
+
+  String? selectedvalue1 = 'True';
+  String? selectedvalue3 = 'True';
+  int selectedvalue4 = 0;
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Parking Spot Simulation'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Select Parking Space Id:'),
+            TextField(
+              keyboardType: TextInputType.number,
+              onChanged: (value) {
+                setState(() {
+                  selectedvalue4 = int.tryParse(value) ?? 0;
+                });
+              },
+            ),
+            Text('Select Vehicle Status:'),
+            DropdownButton<String>(
+              value: selectedvalue1,
+              items: trueOrFalse.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  selectedvalue1 = newValue;
+                });
+              },
+            ),
+            Text('Select Parking Space Obstructed:'),
+            DropdownButton<String>(
+              value: selectedvalue3,
+              items: trueOrFalse.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  selectedvalue3 = newValue;
+                });
+              },
+            ),
+            ElevatedButton(
+              onPressed: () {
+                addOpenCVResultState(
+                  selectedvalue4,
+                  selectedvalue1 ?? 'False',
+                  selectedvalue3 ?? 'False'
+                );
+              },
+              child: const Text('Send Statuses!'),
+            ),
+          ],
+        )
+      ),
+    );
+  }
+}
+
+//home page code
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
@@ -209,6 +362,24 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () {
                 Navigator.push(context,
                   MaterialPageRoute(builder: (context) => SecondRoute()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Simulate Microcontroller Output'),
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => ObjectInSpotRoute()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Simulate OpenCV Output'),
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => OpenCVResultRoute()),
                 );
               },
             ),

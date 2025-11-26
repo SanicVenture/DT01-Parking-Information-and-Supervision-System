@@ -20,14 +20,14 @@ namespace NewParkingAvailabilityServer.Controllers
             _context = context;
         }
 
-        // GET: api/ParkingSpaceItems
+        // GET: api/parkingspaceitems
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ParkingSpaceItem>>> GetParkingSpaceItems()
         {
             return await _context.ParkingSpaceItems.ToListAsync();
         }
 
-        // GET: api/ParkingSpaceItems/5
+        // GET: api/parkingspaceitems/id
         [HttpGet("{id}")]
         public async Task<ActionResult<ParkingSpaceItem>> GetParkingSpaceItem(long id)
         {
@@ -41,7 +41,7 @@ namespace NewParkingAvailabilityServer.Controllers
             return todoItem;
         }
 
-        // PUT: api/ParkingSpaceItems/5
+        // PUT: api/parkingspaceitems/id
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutParkingSpaceItem(long id, ParkingSpaceItem todoItem)
@@ -72,7 +72,7 @@ namespace NewParkingAvailabilityServer.Controllers
             return NoContent();
         }
 
-        // POST: api/ParkingSpaceItems
+        // POST: api/parkingspaceitems
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<ParkingSpaceItem>> PostParkingSpaceItem(ParkingSpaceItem todoItem)
@@ -83,7 +83,7 @@ namespace NewParkingAvailabilityServer.Controllers
             return CreatedAtAction(nameof(GetParkingSpaceItem), new { id = todoItem.Id }, todoItem);
         }
 
-        // DELETE: api/ParkingSpaceItems/5
+        // DELETE: api/parkingspaceitems/id
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteParkingSpaceItem(long id)
         {

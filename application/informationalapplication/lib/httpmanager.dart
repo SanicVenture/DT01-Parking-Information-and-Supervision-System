@@ -2,8 +2,9 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-final String localUrl = 'https://localhost:7288/api/parkingspaceitems/';
-final String remoteUrl = 'https://192.168.1.31:3124/api/parkingspaceitems/';
+final String localUrl = 'https://localhost:7288/api';
+// final String remoteUrl = 'https://192.168.1.31:3124/api';
+final String remoteUrl = 'https://10.217.52.241:3124/api';
 final bool isAndroid = Platform.isAndroid;
 final bool isDesktop = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
@@ -31,7 +32,7 @@ class ParkingSpace {
 
 Future<List<ParkingSpace>> fetchParkingSpaces() async {
   final response =
-      await http.get(Uri.parse(isAndroid ? remoteUrl : localUrl));
+      await http.get(Uri.parse("${isAndroid ? remoteUrl : localUrl}/parkingspaceitems/"));
 
   if (response.statusCode == 200) {
     final List<dynamic> jsonList = jsonDecode(response.body);

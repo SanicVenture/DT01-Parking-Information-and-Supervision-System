@@ -10,6 +10,8 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddDbContext<ParkingSpaceContext>(opt => opt.UseSqlite(builder.Configuration.GetConnectionString("SQLiteConnection")));
 builder.Services.AddDbContext<PSTotalResultsContext>(opt => opt.UseSqlite(builder.Configuration.GetConnectionString("SecondConnection")));
+builder.Services.AddDbContext<ObjectInSpotContext>(opt => opt.UseSqlite(builder.Configuration.GetConnectionString("ObjectInSpotConnection")));
+builder.Services.AddDbContext<OpenCVResultsContext>(opt => opt.UseSqlite(builder.Configuration.GetConnectionString("OpenCVResultsConnection")));
 
 var app = builder.Build();
 
