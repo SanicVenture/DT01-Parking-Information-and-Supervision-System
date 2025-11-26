@@ -840,8 +840,8 @@ void *memccpy (void *restrict, const void *restrict, int, size_t);
 # 1 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\include\\c99/stdbool.h" 1 3
 # 13 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c" 2
 # 97 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
-typedef signed int vfpf_sint_t;
-typedef unsigned int vfpf_uint_t;
+typedef signed long vfpf_sint_t;
+typedef unsigned long vfpf_uint_t;
 # 153 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
 static int prec, width;
 static char flags;
@@ -889,7 +889,156 @@ static void pad(FILE *fp, char *buf, int p)
 
 
 }
-# 1176 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+# 513 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+static void dtoa(FILE *fp, vfpf_sint_t d)
+{
+ char s;
+    int i, w;
+
+ int p;
+
+
+
+
+
+    s = d < 0 ? 1 : 0;
+# 533 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+    p = (0 <= prec) ? prec : 1;
+
+    w = width;
+    if (s
+
+
+
+    ) {
+        --w;
+  s = s ? '-' : '+';
+    }
+# 552 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+    i = sizeof(dbuf) - 1;
+    dbuf[i] = '\0';
+    while (!(i < 1) && (d != 0
+
+    || (0 < p)
+
+
+
+
+
+
+    )) {
+        --i;
+        dbuf[i] = (char)((int)'0' + abs(d % 10));
+
+        --p;
+
+
+
+        --w;
+        d = d / 10;
+    }
+
+
+    if (s != 0) {
+        --i;
+        dbuf[i] = s;
+    }
+
+
+    return (void) pad(fp, &dbuf[i], w);
+}
+# 942 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+static void stoa(FILE *fp, char *s)
+{
+    char *cp;
+    int l, p;
+
+
+
+
+
+    cp = s;
+    if (!cp) {
+        cp = "(null)";
+    }
+
+
+ for (l = 0; cp[l] != '\0'; l++) {
+  continue;
+ }
+
+ if (!(prec < 0) && (prec < l)) {
+  l = prec;
+ }
+
+    p = l;
+# 979 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+    while (p--) {
+        fputc(*cp, fp);
+        ++cp;
+    }
+# 997 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+}
+
+
+
+static void utoa(FILE *fp, vfpf_uint_t d)
+{
+    int i, w;
+
+ int p;
+# 1017 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+    p = (0 <= prec) ? prec : 1;
+
+    w = width;
+
+
+    i = sizeof(dbuf) - 1;
+    dbuf[i] = '\0';
+    while (i && (d != 0
+
+    || (0 < p)
+
+
+
+
+
+
+    )) {
+        --i;
+        dbuf[i] = '0' + (d % 10);
+
+        --p;
+
+
+
+        --w;
+        d = d / 10;
+    }
+
+
+    return (void) pad(fp, &dbuf[i], w);
+}
+# 1157 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+static int
+read_prec_or_width (const char **fmt, va_list *ap) {
+    int n = 0;
+    if ((*fmt)[0] == '*') {
+        ++*fmt;
+        n = (*(int *)__va_arg(*(int **)*ap, (int)0));
+    } else {
+        unsigned char c;
+        while ((c = ((unsigned)(*fmt)[0]) - '0') < 10) {
+            n = n * 10 + c;
+            ++*fmt;
+        }
+    }
+    return n;
+}
+
+
+
+
 static void
 vfpfcnvrt(FILE *fp, char *fmt[], va_list ap)
 {
@@ -909,40 +1058,109 @@ vfpfcnvrt(FILE *fp, char *fmt[], va_list ap)
 
         flags = width = 0;
         prec = -1;
+# 1265 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+        if ((*fmt)[0] == '.') {
+            ++*fmt;
+   prec = read_prec_or_width(fmt, ap);
+  }
 # 1291 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
   cp = *fmt;
-# 1361 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+
+  c = *cp;
+  switch(c) {
+# 1308 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+   case 'l':
+    cp++;
+
+
+
+
+
+
+    break;
+# 1335 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+   case 'u':
+
+
+   case 'i':
+   case 'd':
+# 1350 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+    c = 'i';
+    break;
+   default :
+    c = 0;
+    break;
+  }
+
+
+
+
+
   if (*cp == 'd' || *cp == 'i') {
-# 1404 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
-   convarg.sint = (vfpf_sint_t)(int)(*(int *)__va_arg(*(int **)ap, (int)0));
+
+   switch (c) {
+    case 'i':
+     convarg.sint = (vfpf_sint_t)(int)(*(int *)__va_arg(*(int **)ap, (int)0));
+     break;
+# 1378 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+    case 'l':
+     convarg.sint = (vfpf_sint_t)(*(long *)__va_arg(*(long **)ap, (long)0));
+     break;
+# 1402 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+   }
+
+
 
    *fmt = cp+1;
+# 1432 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+   return (void) dtoa(fp, convarg.sint);
 
-   c = sizeof(dbuf);
-   done = convarg.sint < 0;
-   do {
-    dbuf[--c] = abs(convarg.sint % 10) + '0';
-    convarg.sint /= 10;
+  }
 
 
 
-   } while (convarg.sint != 0 && c != 0);
-   if (c != 0 && done) {
-    dbuf[--c] = '-';
 
+  if (0
+# 1450 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+    || *cp == 'u'
 
+    ) {
 
+   switch (c) {
+    case 'i':
+     convarg.uint = (vfpf_uint_t)(unsigned int)(*(unsigned int *)__va_arg(*(unsigned int **)ap, (unsigned int)0));
+     break;
+# 1469 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+    case 'l':
+     convarg.uint = (vfpf_uint_t)(*(unsigned long *)__va_arg(*(unsigned long **)ap, (unsigned long)0));
+     break;
+# 1493 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
    }
-   while (c != sizeof(dbuf)) {
-    fputc(dbuf[c++], fp);
+
+
+
+   *fmt = cp+1;
+   switch (*cp) {
+# 1523 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+    case 'u':
+# 1542 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+     return (void) utoa(fp, convarg.uint);
+# 1589 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
    }
-
-
-
-   return;
-
-
-
+  }
+# 1656 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+  done = 0;
+  if ((*fmt)[0] == 's') {
+   ++*fmt;
+   done = 1;
+  }
+  else if ((*fmt)[0] == 'l' && (*fmt)[1] == 'l' && (*fmt)[2] == 's') {
+   *fmt += 3;
+   done = 1;
+  }
+  if (done) {
+# 1682 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"
+   return (void) stoa(fp, (*(char * *)__va_arg(*(char * **)ap, (char *)0)));
 
   }
 # 1806 "C:\\Program Files\\Microchip\\xc8\\v3.10\\pic\\sources\\c99\\common\\doprnt.c"

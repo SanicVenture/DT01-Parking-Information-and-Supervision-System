@@ -4,7 +4,12 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/C:/Users/alext/Repos/DT01-Parking-Information-and-Supervision-System/DT01_Controller/main.c</file>
-            <file>file:/C:/Users/alext/Repos/DT01-Parking-Information-and-Supervision-System/DT01_Controller/mcc_generated_files/eusart1.c</file>
+            <file>file:/C:/Users/alext/Repos/DT01-Parking-Information-and-Supervision-System/DT01_Controller/mcc_generated_files/TCPIPLibrary/rtcc.c</file>
+            <file>file:/C:/Users/alext/Repos/DT01-Parking-Information-and-Supervision-System/DT01_Controller/mcc_generated_files/eth.c</file>
+            <file>file:/C:/Users/alext/Repos/DT01-Parking-Information-and-Supervision-System/DT01_Controller/mcc_generated_files/TCPIPLibrary/arpv4.c</file>
+            <file>file:/C:/Users/alext/Repos/DT01-Parking-Information-and-Supervision-System/DT01_Controller/mcc_generated_files/TCPIPLibrary/mac_address.h</file>
+            <file>file:/C:/Users/alext/Repos/DT01-Parking-Information-and-Supervision-System/DT01_Controller/mcc_generated_files/eth.h</file>
+            <file>file:/C:/Users/alext/Repos/DT01-Parking-Information-and-Supervision-System/DT01_Controller/mcc_generated_files/TCPIPLibrary/ethernet_driver.h</file>
         </group>
     </open-files>
 </project-private>

@@ -150,22 +150,6 @@
 #define IO_RC2_SetDigitalInput()    do { TRISCbits.TRISC2 = 1; } while(0)
 #define IO_RC2_SetDigitalOutput()   do { TRISCbits.TRISC2 = 0; } while(0)
 
-// get/set RC3 procedures
-#define RC3_SetHigh()               do { LATCbits.LATC3 = 1; } while(0)
-#define RC3_SetLow()                do { LATCbits.LATC3 = 0; } while(0)
-#define RC3_Toggle()                do { LATCbits.LATC3 = ~LATCbits.LATC3; } while(0)
-#define RC3_GetValue()              PORTCbits.RC3
-#define RC3_SetDigitalInput()       do { TRISCbits.TRISC3 = 1; } while(0)
-#define RC3_SetDigitalOutput()      do { TRISCbits.TRISC3 = 0; } while(0)
-
-// get/set RC5 procedures
-#define RC5_SetHigh()               do { LATCbits.LATC5 = 1; } while(0)
-#define RC5_SetLow()                do { LATCbits.LATC5 = 0; } while(0)
-#define RC5_Toggle()                do { LATCbits.LATC5 = ~LATCbits.LATC5; } while(0)
-#define RC5_GetValue()              PORTCbits.RC5
-#define RC5_SetDigitalInput()       do { TRISCbits.TRISC5 = 1; } while(0)
-#define RC5_SetDigitalOutput()      do { TRISCbits.TRISC5 = 0; } while(0)
-
 // get/set IO_RC6 aliases
 #define IO_RC6_TRIS                 TRISCbits.TRISC6
 #define IO_RC6_LAT                  LATCbits.LATC6

@@ -25,6 +25,7 @@
 #include <stdbool.h>
 #include "rtcc.h"
 #include "../mcc.h"
+#include "../tmr1.h"
 
 #warning USING TIMER1 FOR TIMEBASE
 

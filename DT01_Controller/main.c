@@ -56,6 +56,12 @@
  * Objective: To sense vehicles and light a status light to match.
  */
 
+#include "mcc_generated_files/TCPIPLibrary/mac_address.h"
+
+// Define the globals required by the stack
+mac48Address_t hostMacAddress;
+const mac48Address_t broadcastMAC = { {0xFF, 0xFF, 0xF1, 0x55, 0xFF, 0xFF} };
+
 //define macros for ultrasonic senor
 #define trigger RA3
 #define echo    RB5
@@ -78,13 +84,13 @@ void main(void)
     
     // -- [[ Configure Timer1 To Operate In Timer Mode  ]] --
  
-    // Clear The Timer1 Register. To start counting from 0
-    TMR1 = 0;
+    // Clear The Timer2 Register. To start counting from 0
+    TMR2 = 0;
     // Choose the local clock source (timer mode)
-    TMR1CS = 0;
+    //TMR2CS = 0;
     // Choose the desired prescaler ratio (1:1)
-    T1CKPS0 = 0;
-    T1CKPS1 = 0;
+    T2CKPS0 = 0;
+    T2CKPS1 = 0;
     
     // If using interrupts in PIC18 High/Low Priority Mode you need to enable the Global High and Low Interrupts
     // If using interrupts in PIC Mid-Range Compatibility Mode you need to enable the Global and Peripheral Interrupts
@@ -144,7 +150,7 @@ int calc_dist(void)
   unsigned long int distance=0;
   unsigned long int timer=0;
   // set timer to zero
-  TMR1=0;
+  TMR2=0;
   // Send Trigger Pulse To The Sensor
   trigger=1;
   // pulse is 10 us long
@@ -154,14 +160,14 @@ int calc_dist(void)
   // Wait For The Echo Pulse From The Sensor
   while(!echo);
   // Turn ON Timer Module
-  TMR1ON=1;
+  TMR2ON=1;
   // Wait Until The Pulse Ends
   while(echo);
   // Turn OFF The Timer
-  TMR1ON=0;
+  TMR2ON=0;
   // Calculate The Distance Using The Equation
-  distance=TMR1/58.82;
-  timer=TMR1;
+  distance=TMR2/58.82;
+  timer=TMR2;
   
   return distance;
 }
