@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using NewParkingAvailabilityServer;
 using NewParkingAvailabilityServer.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,4 +28,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+OpenCVManager openCVManager = new OpenCVManager();
+openCVManager.StartImageRecognition();
+
+Console.WriteLine("pizza");
+
 app.Run();
+

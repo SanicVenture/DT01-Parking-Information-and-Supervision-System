@@ -149,13 +149,6 @@ namespace NewParkingAvailabilityServer
                             $"maintenanceAlert={currentItem.convertedSpot.maintenanceAlert} " +
                             $"WHERE id={currentItem.Id}";
                         command.ExecuteNonQuery();
-
-                        //command.CommandText = $"UPDATE PSTotalResultsItems SET " +
-                        //    $"vehicle={-1}, " +
-                        //    $"objectInSpot={-1}, " +
-                        //    $"parkingSpaceObstructed={-1} " +
-                        //    $"WHERE Id = {id}";
-                        //command.ExecuteNonQuery();
                     }
                 }
                 catch (SqliteException ex)
@@ -288,7 +281,7 @@ namespace NewParkingAvailabilityServer
             }
         }
 
-        public async Task createnewOpenCVResultsEntry(OpenCVResultsItem todoItem)
+        public async Task createnewOpenCVResultsEntry(OpenCVResultsItem todoItem) //fix this so that it can check if an object exists already. Gotta have maximum safety.
         {
             try
             {

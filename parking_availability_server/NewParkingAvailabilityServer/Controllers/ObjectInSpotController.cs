@@ -15,7 +15,7 @@ namespace NewParkingAvailabilityServer.Controllers
     {
         private readonly ObjectInSpotContext _context;
 
-        private SQLManager sQLManager = new SQLManager();
+        private SQLManager sqlManager = new SQLManager();
 
         public ObjectInSpotController(ObjectInSpotContext context)
         {
@@ -55,7 +55,7 @@ namespace NewParkingAvailabilityServer.Controllers
 
             if (!ObjectInSpotItemExists(id))
             {
-                await sQLManager.createNewObjectInSpotEntry(todoItem);
+                await sqlManager.createNewObjectInSpotEntry(todoItem);
             }
 
             _context.Entry(todoItem).State = EntityState.Modified;
@@ -76,7 +76,7 @@ namespace NewParkingAvailabilityServer.Controllers
                 }
             }
 
-            sQLManager.CheckForOpenCVData(id);
+            sqlManager.CheckForOpenCVData(id);
 
             return NoContent();
         }
