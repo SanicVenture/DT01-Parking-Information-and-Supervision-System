@@ -8,6 +8,7 @@
  */
 
 // The following lines are from DT01_Controller/main.c
+#include <Arduino.h>
 #include "Ethernet_Generic.h"
 
 //define macros for ultrasonic senor
