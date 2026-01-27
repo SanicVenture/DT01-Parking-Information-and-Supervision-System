@@ -115,8 +115,10 @@ void main(void)
     gLED=0;
 
     // define variables needed in while loop so they are global
+    uint8_t spotID = 1;
     uint8_t occupied=0;
     uint8_t error=0;
+    uint8_t whileCount=0;
     
     while (1)
     {
@@ -140,6 +142,17 @@ void main(void)
         }
         
         __delay_ms(250);
+        whileCount++;
+        
+        //This should roughly equal a 60 second wait to upload the
+        //state to the Parking Availability Server
+        if (whileCount == 240)
+        {
+            //Pseudocode starts here
+            httppostJSONtoParkingAvailabilityServer(spotID, occupied)
+            //Pseudocode ends here 
+        }
+        
     }
 }
 

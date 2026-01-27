@@ -10,7 +10,8 @@ namespace NewParkingAvailabilityServer
         private int msTimeout = 120000;
         private int[] spotIds = [1, 2]; //example parking spot IDs
 
-        //This string array of acceptable vehicles is just an example of what the OpenCV implementation will look for.
+        //This string array of acceptable vehicles is just an example of what the
+        //OpenCV implementation will look for.
         private string[] acceptableVehicles = ["car", "motorcycle", "van", "truck"];
 
         public async void StartImageRecognition()
@@ -48,14 +49,16 @@ namespace NewParkingAvailabilityServer
                         //GetFrameObjects still needs to be created
                         string[][] listOfObjectsInPhoto = GetFrameObjects(frame);
 
-                        //do analysis of the frame for whether the parking spot is obstructed or not
+                        //do analysis of the frame for whether the parking spot is
+                        //obstructed or not
                         //GetParkingSpotFrame still needs to be created
                         bool[] parkingSpaceStates = GetParkingSpotState(frame);
 
 
                         int index = 0;
 
-                        //the foreach loop checks for
+                        //the foreach loop checks for whether the parking space objects
+                        //are acceptable to be in the parking space.
                         foreach (string[] parkingSpaceObjects in listOfObjectsInPhoto)
                         {
                             bool validObject = false;
@@ -67,7 +70,10 @@ namespace NewParkingAvailabilityServer
                                     break;
                                 }
                             }
-                            results[index] = new OpenCVResultsItem(spotIds[index], validObject, parkingSpaceStates[index]);
+                            results[index] = new OpenCVResultsItem(
+                                spotIds[index],
+                                validObject,
+                                parkingSpaceStates[index]);
 
                             await sqlManager.createnewOpenCVResultsEntry(results[index]);
                             sqlManager.CheckForMicrocontrollerData(spotIds[index]);

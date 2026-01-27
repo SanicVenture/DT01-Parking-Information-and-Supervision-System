@@ -32,12 +32,6 @@ namespace NewParkingAvailabilityServer
                             );
                         }
                     }
-                    //command.CommandText = $"UPDATE PSTotalResultsItems SET " +
-                    //    $"vehicle={-1}, " +
-                    //    $"objectInSpot={-1}, " +
-                    //    $"parkingSpaceObstructed={-1} " +
-                    //    $"WHERE Id = {id}";
-                    //command.ExecuteNonQuery();
                 }            
             
             }
@@ -247,12 +241,6 @@ namespace NewParkingAvailabilityServer
                             $"WHERE id={currentItem.Id}";
                         command.ExecuteNonQuery();
 
-                        //command.CommandText = $"UPDATE PSTotalResultsItems SET " +
-                        //    $"vehicle={-1}, " +
-                        //    $"objectInSpot={-1}, " +
-                        //    $"parkingSpaceObstructed={-1} " +
-                        //    $"WHERE Id = {id}";
-                        //command.ExecuteNonQuery();
                     }
                 }
                 catch (SqliteException ex)
@@ -271,7 +259,10 @@ namespace NewParkingAvailabilityServer
                     conn.Open();
                     var command = conn.CreateCommand();
                     command.CommandText = $"INSERT INTO PSTotalResultsItems " +
-                        $"VALUES ({todoItem.Id}, {todoItem.vehicle}, {todoItem.objectInSpot}, {todoItem.parkingSpaceObstructed})";
+                        $"VALUES ({todoItem.Id}," +
+                        $" {todoItem.vehicle}," +
+                        $" {todoItem.objectInSpot}," +
+                        $" {todoItem.parkingSpaceObstructed})";
                     command.ExecuteNonQuery();
                 }
             }
@@ -290,7 +281,9 @@ namespace NewParkingAvailabilityServer
                     conn.Open();
                     var command = conn.CreateCommand();
                     command.CommandText = $"INSERT INTO OpenCVResultsItems " +
-                        $"VALUES ({todoItem.Id}, {todoItem.vehicle}, {todoItem.parkingSpaceObstructed})";
+                        $"VALUES ({todoItem.Id}," +
+                        $" {todoItem.vehicle}," +
+                        $" {todoItem.parkingSpaceObstructed})";
                     command.ExecuteNonQuery();
                 }
             }
@@ -309,7 +302,8 @@ namespace NewParkingAvailabilityServer
                     conn.Open();
                     var command = conn.CreateCommand();
                     command.CommandText = $"INSERT INTO ObjectInSpotItems " +
-                        $"VALUES ({todoItem.Id}, {todoItem.objectInSpot})";
+                        $"VALUES ({todoItem.Id}," +
+                        $" {todoItem.objectInSpot})";
                     command.ExecuteNonQuery();
                 }
             }
