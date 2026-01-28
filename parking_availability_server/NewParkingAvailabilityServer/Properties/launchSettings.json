@@ -11,18 +11,20 @@
       }
     },
     "https": {
-        "commandName": "Project",
-        "dotnetRunMessages": true,
-        "launchBrowser": false,
-        //desktop url
-        "applicationUrl": "https://192.168.50.235;https://localhost:7288",
-        //local ip for rog zephyrus
-        //"applicationUrl": "https://192.168.1.31:3124;https://localhost:7288;http://localhost:5287",
-        //hotspot on UA campus
-        //"applicationUrl": "https://10.217.52.241:3124;https://localhost:7288;http://localhost:5287",
-        "environmentVariables": {
-            "ASPNETCORE_ENVIRONMENT": "Development"
-        }
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      //desktop url
+      //"applicationUrl": "https://192.168.50.235;https://localhost:7288",
+      //local ip for rog zephyrus
+      //"applicationUrl": "https://192.168.1.31:3124;https://localhost:7288;http://localhost:5287",
+      //hotspot on UA campus
+      //"applicationUrl": "https://10.217.52.241:3124;https://localhost:7288;http://localhost:5287",
+      //TPLink on UA campus
+      "applicationUrl": "https://10.18.30.230:3124;https://localhost:7288;http://localhost:5287",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
     }
   }
 }
