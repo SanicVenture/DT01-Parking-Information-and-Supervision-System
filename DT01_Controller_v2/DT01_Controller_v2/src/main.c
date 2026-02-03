@@ -10,14 +10,15 @@
 // The following lines are from DT01_Controller/main.c
 #include <Arduino.h>
 #include "Ethernet_Generic.h"
+#include "stm32f4xx_hal.h"  // Include STM32 HAL header
 
-//define macros for ultrasonic senor
-#define trigger RA3
-#define echo    RB5
+//define macros for ultrasonic sensor, fixed for STM32
+#define trigger PC1
+#define echo    PC0
 
-//define macros for red and green LEDs
-#define rLED    RB1
-#define gLED    RB2
+//define macros for red and green LEDs, fixed for STM32
+#define rLED    PA0
+#define gLED    PA1
 
 //serial stuff
 #define START_DATA_STREAM_PROTOCOL 0x03
@@ -29,7 +30,9 @@ int calc_dist(void);
 void main(void)
 {
     // Initialize the device
-    SYSTEM_Initialize();
+    //SYSTEM_Initialize(); for pic
+    // STM32 HAL initialization
+    HAL_Init();
     
     // -- [[ Configure Timer1 To Operate In Timer Mode  ]] --
  
@@ -42,6 +45,7 @@ void main(void)
     T2CKPS1 = 0;
     
     rLED=1;
+    HAL_GPIO_WritePin(rLED_GPIO_Port, rLED_Pin, GPIO_PIN_SET);
     gLED=1;
     __delay_ms(500);
     rLED=0;
