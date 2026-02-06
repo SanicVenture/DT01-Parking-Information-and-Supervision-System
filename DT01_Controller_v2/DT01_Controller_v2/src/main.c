@@ -8,103 +8,125 @@
  */
 
 // The following lines are from DT01_Controller/main.c
+#include "stm32f4xx_hal.h"  // Include STM32 HAL header
+#include <stdint.h>
+#ifdef __cplusplus
 #include <Arduino.h>
 #include "Ethernet_Generic.h"
-#include "stm32f4xx_hal.h"  // Include STM32 HAL header
+#endif
+#include "../Core/Inc/main.h" // pin definitions and GPIO ports (project-relative path)
 
-//define macros for ultrasonic sensor, fixed for STM32
-#define trigger PC1
-#define echo    PC0
-
-//define macros for red and green LEDs, fixed for STM32
-#define rLED    PA0
-#define gLED    PA1
-
-//serial stuff
-#define START_DATA_STREAM_PROTOCOL 0x03
-#define STOP_DATA_STREAM_PROTOCOL 0xFC
-
-//define distance calculation function
+//forward declarations
 int calc_dist(void);
+static void dt01_DWT_Delay_Init(void);
+static inline uint32_t dt01_micros(void);
+static void dt01_delay_us(uint32_t us);
 
-void main(void)
+/* Application state (kept across loop calls) */
+static uint8_t app_occupied = 0;
+static uint8_t app_error = 0;
+
+/* C entry points called from Arduino-compatible C++ wrappers */
+void app_setup(void)
 {
-    // Initialize the device
-    //SYSTEM_Initialize(); for pic
-    // STM32 HAL initialization
-    HAL_Init();
-    
-    // -- [[ Configure Timer1 To Operate In Timer Mode  ]] --
- 
-    // Clear The Timer2 Register. To start counting from 0
-    TMR2 = 0;
-    // Choose the local clock source (timer mode)
-    //TMR2CS = 0;
-    // Choose the desired prescaler ratio (1:1)
-    T2CKPS0 = 0;
-    T2CKPS1 = 0;
-    
-    rLED=1;
-    HAL_GPIO_WritePin(rLED_GPIO_Port, rLED_Pin, GPIO_PIN_SET);
-    gLED=1;
-    __delay_ms(500);
-    rLED=0;
-    gLED=0;
+  HAL_Init();
+  SystemClock_Config();
 
-    // define variables needed in while loop so they are global
-    uint8_t occupied=0;
-    uint8_t error=0;
-    
-    while (1)
-    {
-        // loop for checking status and setting lights accordingly
-        int dist = calc_dist();
-        
-        if (dist <= 512){
-            rLED=1;
-            gLED=0;
-            occupied=1;
-            if (error == 1){
-                gLED=1;
-            }
-        } else {
-            rLED=0;
-            gLED=1;
-            occupied=0;
-            if (error == 1){
-                rLED=1;
-            }
-        }
-        
-        __delay_ms(250);
+  /* Initialize GPIOs configured by CubeMX */
+  MX_GPIO_Init();
+
+  /* Initialize DWT cycle counter for microsecond timing */
+  dt01_DWT_Delay_Init();
+
+  /* simple LED startup blink */
+  HAL_GPIO_WritePin(rLED_GPIO_Port, rLED_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(gLED_GPIO_Port, gLED_Pin, GPIO_PIN_SET);
+  HAL_Delay(500);
+  HAL_GPIO_WritePin(rLED_GPIO_Port, rLED_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(gLED_GPIO_Port, gLED_Pin, GPIO_PIN_RESET);
+
+  app_occupied = 0;
+  app_error = 0;
+}
+
+void app_loop(void)
+{
+  int dist = calc_dist();
+
+  if (dist <= 512) {
+    HAL_GPIO_WritePin(rLED_GPIO_Port, rLED_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(gLED_GPIO_Port, gLED_Pin, GPIO_PIN_RESET);
+    app_occupied = 1;
+    if (app_error == 1) {
+      HAL_GPIO_WritePin(gLED_GPIO_Port, gLED_Pin, GPIO_PIN_SET);
     }
+  } else {
+    HAL_GPIO_WritePin(rLED_GPIO_Port, rLED_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(gLED_GPIO_Port, gLED_Pin, GPIO_PIN_SET);
+    app_occupied = 0;
+    if (app_error == 1) {
+      HAL_GPIO_WritePin(rLED_GPIO_Port, rLED_Pin, GPIO_PIN_SET);
+    }
+  }
+
+  HAL_Delay(250);
+}
+
+// microsecond timing using DWT CYCCNT
+static void dt01_DWT_Delay_Init(void)
+{
+  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+  DWT->CYCCNT = 0;
+  DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+}
+
+static inline uint32_t dt01_micros(void)
+{
+  return (uint32_t)(DWT->CYCCNT / (SystemCoreClock / 1000000UL));
+}
+
+static void dt01_delay_us(uint32_t us)
+{
+  uint32_t start = dt01_micros();
+  while ((dt01_micros() - start) < us) {
+    __NOP();
+  }
 }
 
 // Definition Of The calc_dist() Function
 int calc_dist(void)
 {
-  // define required variables
-  unsigned long int distance=0;
-  unsigned long int timer=0;
-  // set timer to zero
-  TMR2=0;
-  // Send Trigger Pulse To The Sensor
-  trigger=1;
-  // pulse is 10 us long
-  __delay_us(10);
-  // turn off pulse
-  trigger=0;
-  // Wait For The Echo Pulse From The Sensor
-  while(!echo);
-  // Turn ON Timer Module
-  TMR2ON=1;
-  // Wait Until The Pulse Ends
-  while(echo);
-  // Turn OFF The Timer
-  TMR2ON=0;
-  // Calculate The Distance Using The Equation
-  distance=TMR2/58.82;
-  timer=TMR2;
-  
-  return distance;
+  unsigned long distance = 0;
+  unsigned long timer = 0;
+
+  // Ensure trigger is low
+  HAL_GPIO_WritePin(trigger_GPIO_Port, trigger_Pin, GPIO_PIN_RESET);
+  dt01_delay_us(2);
+
+  // Send Trigger Pulse To The Sensor (10 us)
+  HAL_GPIO_WritePin(trigger_GPIO_Port, trigger_Pin, GPIO_PIN_SET);
+  dt01_delay_us(10);
+  HAL_GPIO_WritePin(trigger_GPIO_Port, trigger_Pin, GPIO_PIN_RESET);
+
+  // Wait for echo rising edge (with timeout)
+  uint32_t start_wait = dt01_micros();
+  while (HAL_GPIO_ReadPin(echo_GPIO_Port, echo_Pin) == GPIO_PIN_RESET) {
+    if ((dt01_micros() - start_wait) > 30000UL) { // 30 ms timeout
+      return 0; // timeout -> no object
+    }
+  }
+
+  // measure pulse width
+  uint32_t t_start = dt01_micros();
+  while (HAL_GPIO_ReadPin(echo_GPIO_Port, echo_Pin) == GPIO_PIN_SET) {
+    if ((dt01_micros() - t_start) > 30000UL) { // 30 ms safety
+      break;
+    }
+  }
+  uint32_t t_end = dt01_micros();
+
+  timer = (t_end - t_start);
+  distance = (unsigned long)(timer / 58.82);
+
+  return (int)distance;
 }
