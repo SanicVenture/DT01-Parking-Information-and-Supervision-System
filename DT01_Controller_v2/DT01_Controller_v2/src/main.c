@@ -27,13 +27,14 @@ static uint8_t app_occupied = 0;
 static uint8_t app_error = 0;
 
 /* C entry points called from Arduino-compatible C++ wrappers */
-void app_setup(void)
+void setup(void)
 {
   HAL_Init();
   SystemClock_Config();
 
   /* Initialize GPIOs configured by CubeMX */
   MX_GPIO_Init();
+  //HAL_GPIO_Init()
 
   /* Initialize DWT cycle counter for microsecond timing */
   dt01_DWT_Delay_Init();
@@ -49,7 +50,7 @@ void app_setup(void)
   app_error = 0;
 }
 
-void app_loop(void)
+void loop(void)
 {
   int dist = calc_dist();
 
