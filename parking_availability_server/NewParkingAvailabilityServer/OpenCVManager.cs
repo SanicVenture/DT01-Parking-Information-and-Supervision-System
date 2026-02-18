@@ -1,6 +1,9 @@
 ﻿using NewParkingAvailabilityServer.Models;
 using OpenCvSharp;
+using System.Drawing;
 using System.Security.Cryptography.Xml;
+using static System.Net.Mime.MediaTypeNames;
+using System.Data;
 
 namespace NewParkingAvailabilityServer
 {
@@ -76,12 +79,44 @@ namespace NewParkingAvailabilityServer
 
                                     LineSegmentPoint[] lines = Cv2.HoughLinesP(cropped_image, 6, Math.PI / 60, 160, 40, 25);
 
-                                    using var cropped_original = new Mat(frame, roi);
-                                    using (var lined_image = DrawLines(cropped_original, lines, Scalar.Red))
+                                    //using (var cropped_original = (new Mat(frame, roi)).Clone())
+                                    //{ 
+
+
+                                    //}
+                                    
+                                    
+
+
+                                    ////image = new Mat(image);
+                                    //Mat line_image = new Mat(cropped_original.Size(), cropped_original.Type());
+                                    //foreach (LineSegmentPoint line in lines)
+                                    //{
+                                    //    Cv2.Line(line_image, line.P1.X, line.P1.Y, line.P2.X, line.P2.Y, Scalar.Red, 3);
+                                    //}
+                                    //Cv2.AddWeighted(image, 0.8, line_image, 1.0, 0.0, image);
+
+                                    //return image;
+
+                                    using (var lined_image = DrawLines((new Mat(frame, roi)).Clone(), lines, Scalar.Red))
                                     {
                                         Cv2.ImShow("Lined Image", lined_image);
                                         Cv2.WaitKey(0);
                                     }
+
+                                    lines = lines.OrderBy(x => x.P1.X).ToArray();
+
+                                    //foreach (var line in lines)
+                                    //{
+                                    //    using (var line_image = DrawLines((new Mat(frame, roi)).Clone(), [line], Scalar.Red))
+                                    //    {
+                                    //        Cv2.ImShow("Lined Image", line_image);
+                                    //        Cv2.WaitKey(0);
+                                    //    }
+                                    //}
+
+
+
                                 }
 
 
