@@ -123,28 +123,56 @@ void loop(void)
   /* Handle Ethernet client requests */
   EthernetClient client = server.available();
   if (client) {
-    boolean currentLineIsBlank = true;
-    while (client.connected()) {
-      if (client.available()) {
-        char c = client.read();
-        if (c == '\n' && currentLineIsBlank) {
-          // Send HTTP response
-          client.println("HTTP/1.1 200 OK");
-          client.println("Content-Type: application/json");
-          client.println("Connection: close");
-          client.println();
-          client.print("{\"occupied\":");
-          client.print(app_occupied);
-          client.println("}");
-          break;
-        }
-        if (c == '\n') {
-          currentLineIsBlank = true;
-        } else if (c != '\r') {
-          currentLineIsBlank = false;
-        }
+    // Read request line
+    String reqLine = client.readStringUntil('\n');
+    reqLine.trim();
+    int sp1 = reqLine.indexOf(' ');
+    int sp2 = reqLine.indexOf(' ', sp1 + 1);
+    String method = (sp1 >= 0 && sp2 > sp1) ? reqLine.substring(0, sp1) : "";
+    String path = (sp1 >= 0 && sp2 > sp1) ? reqLine.substring(sp1 + 1, sp2) : "";
+
+    // Read headers and find Content-Length
+    int contentLength = 0;
+    while (true) {
+      String header = client.readStringUntil('\n');
+      header.trim();
+      if (header.length() == 0) break;
+      if (header.startsWith("Content-Length:")) {
+        contentLength = header.substring(15).toInt();
       }
     }
+
+    // Read body if present
+    String body = "";
+    if (contentLength > 0) {
+      char *buf = (char*)malloc(contentLength + 1);
+      if (buf) {
+        int n = client.readBytes(buf, contentLength);
+        buf[n] = '\0';
+        body = String(buf);
+        free(buf);
+      }
+    }
+
+    // If POST /error, accept body "1" or "0" (also accepts JSON containing 1)
+    if (method == "POST" && path == "/error") {
+      body.trim();
+      int new_err = 0;
+      if (body.indexOf('1') != -1) new_err = 1;
+      app_error = (uint8_t)new_err;
+    }
+
+    // Send JSON response with current state
+    client.println("HTTP/1.1 200 OK");
+    client.println("Content-Type: application/json");
+    client.println("Connection: close");
+    client.println();
+    client.print("{\"occupied\":");
+    client.print(app_occupied);
+    client.print(",\"error\":");
+    client.print(app_error);
+    client.println("}");
+
     delay(1);
     client.stop();
   }
