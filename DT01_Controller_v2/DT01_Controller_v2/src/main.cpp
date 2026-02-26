@@ -43,6 +43,12 @@ const uint8_t gLED = PA1; // PA1
 const uint8_t trigger = PC1; // PC1
 const uint8_t echo = PC0; // PC0 
 
+// Ethernet configuration
+byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+IPAddress ip(10, 18, 28, 240);
+EthernetServer server(80);
+const uint8_t w5500_cs = PA4; // CS for W5500 (wire this pin to W5500 CS)
+
 /* C entry points called from Arduino-compatible C++ wrappers */
 void setup(void)
 {
@@ -62,6 +68,15 @@ void setup(void)
   //intialize serial for debugging
   Serial.begin(115200);
   Serial.println("Ultrasonic Parking Sensor Starting...");
+
+  /* Initialize Ethernet with W5500 */
+  Ethernet.init(w5500_cs);      // ensure driver uses correct chip-select pin
+  delay(50);
+  Ethernet.begin(mac, ip);
+  server.begin();
+  
+  Serial.print("Ethernet IP: ");
+  Serial.println(Ethernet.localIP());
 
   /* Initialize TIM5-based microsecond timing and echo ISR */
   dt01_timer_init();
@@ -103,6 +118,35 @@ void loop(void)
     if (app_error == 1) {
       digitalWrite(rLED,1);
     }
+  }
+
+  /* Handle Ethernet client requests */
+  EthernetClient client = server.available();
+  if (client) {
+    boolean currentLineIsBlank = true;
+    while (client.connected()) {
+      if (client.available()) {
+        char c = client.read();
+        if (c == '\n' && currentLineIsBlank) {
+          // Send HTTP response
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: application/json");
+          client.println("Connection: close");
+          client.println();
+          client.print("{\"occupied\":");
+          client.print(app_occupied);
+          client.println("}");
+          break;
+        }
+        if (c == '\n') {
+          currentLineIsBlank = true;
+        } else if (c != '\r') {
+          currentLineIsBlank = false;
+        }
+      }
+    }
+    delay(1);
+    client.stop();
   }
 
   HAL_Delay(250);

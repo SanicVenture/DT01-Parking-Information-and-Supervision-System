@@ -8104,6 +8104,28 @@
 			)
 		)
 	)
+	(global_label "ethCS"
+		(shape bidirectional)
+		(at 436.88 106.68 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "1140cc50-d357-4fe0-84a8-dccc26999ca0")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 427.3407 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "rLED1"
 		(shape output)
 		(at 88.9 -73.66 180)
@@ -8192,6 +8214,28 @@
 			)
 		)
 	)
+	(global_label "ethMISO"
+		(shape bidirectional)
+		(at 39.37 303.53 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "4605a22e-8179-4227-88ba-4261f6c74f2f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 27.714 303.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "ECHO1"
 		(shape input)
 		(at 303.53 295.91 0)
@@ -8210,6 +8254,28 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "ethMISO"
+		(shape bidirectional)
+		(at 436.88 101.6 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "478ed8e4-a0a0-4c9b-aab2-6363764e5026")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 425.224 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 				(hide yes)
 			)
 		)
@@ -8566,6 +8632,50 @@
 			)
 		)
 	)
+	(global_label "ethSCK"
+		(shape bidirectional)
+		(at 436.88 104.14 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "ad05f8c5-15a1-4500-96bc-860608f610c1")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 426.0707 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "ethMOSI"
+		(shape bidirectional)
+		(at 39.37 306.07 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "af6f06c8-4c24-4e71-b551-051acf7408d1")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 27.714 306.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "LEDA"
 		(shape output)
 		(at 129.54 -12.7 0)
@@ -8584,6 +8694,28 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "ethSCK"
+		(shape bidirectional)
+		(at 39.37 300.99 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "b952f1e7-3100-4ca7-af89-82347e47856a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 28.5607 300.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 				(hide yes)
 			)
 		)
@@ -8742,6 +8874,28 @@
 			)
 		)
 	)
+	(global_label "ethCS"
+		(shape bidirectional)
+		(at 39.37 298.45 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "cf086a29-5cc1-48da-bd98-a22397afd3cb")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 29.8307 298.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "RST"
 		(shape output)
 		(at 219.71 -41.91 180)
@@ -8870,6 +9024,28 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "ethMOSI"
+		(shape bidirectional)
+		(at 436.88 99.06 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "f6bca59f-76f6-4535-a91a-13331c10b763")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 425.224 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 				(hide yes)
 			)
 		)
