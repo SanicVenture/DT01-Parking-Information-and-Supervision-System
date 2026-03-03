@@ -1,5 +1,8 @@
 ﻿using Microsoft.Data.Sqlite;
 using NewParkingAvailabilityServer.Models;
+using System.Linq.Expressions;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace NewParkingAvailabilityServer
 {
@@ -64,7 +67,7 @@ namespace NewParkingAvailabilityServer
         }
 
         //called by the OpenCVResultsController
-        public void CheckForMicrocontrollerData(long id)
+        public async Task CheckForMicrocontrollerData(long id)
         {
             ObjectInSpotItem? checkedItem = null;
             try
@@ -93,6 +96,33 @@ namespace NewParkingAvailabilityServer
 
             }
 
+
+            //change this to be if it is null, then continue the code!
+
+            if (checkedItem is null)
+            {
+                try
+                {
+                    var http = new HttpClient();
+                    var json = await http.GetStringAsync("http://10.18.28.240/");
+
+                    var doc = JsonDocument.Parse(json);
+                    int occupied = doc.RootElement.GetProperty("occupied").GetInt32();
+                    int error = doc.RootElement.GetProperty("error").GetInt32();
+
+                    checkedItem = new ObjectInSpotItem(
+                        1, //hardcoded ID for now.
+                        Convert.ToBoolean(occupied)
+                    );
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
+
+            //add error state to table!!!
             if (checkedItem is not null)
             {
                 OpenCVResultsItem? openCVCorrespondingItem = null;

@@ -93,6 +93,7 @@ namespace NewParkingAvailabilityServer
                             List<OpenCvSharp.Point> points = new List<OpenCvSharp.Point>();
 
                             Cv2.NamedWindow("Select ROI");
+                            Cv2.ResizeWindow("Select ROI", frameClone.Size());
                             Cv2.SetMouseCallback("Select ROI", (MouseEventTypes @event, int x, int y, MouseEventFlags flags, IntPtr userData) =>
                             {
                                 if (@event == MouseEventTypes.LButtonDown)
@@ -123,10 +124,12 @@ namespace NewParkingAvailabilityServer
                             Cv2.ImShow("ROI", dst);
                             Cv2.WaitKey(0);
 
+                            //Cv2.ImWrite("masked_output.png", dst); //should we be using masked output for detection?
+
                             //instead of what's below, do YOLO algorithm instead. 
 
 
-                            using var predictor = new YoloPredictor("yolov8n.onnx");
+                            using var predictor = new YoloPredictor("yolov8s.onnx");
 
                             var result = await predictor.DetectAsync("input_frame_with_cones.png");
 
@@ -134,14 +137,12 @@ namespace NewParkingAvailabilityServer
 
                             foreach (var detection in result)
                             {
-                                var rectangle = new SixLabors.ImageSharp.PointF[] { 
-                                    new SixLabors.ImageSharp.Point(detection.Bounds.Bottom, detection.Bounds.Left), 
-                                    new SixLabors.ImageSharp.Point(detection.Bounds.Bottom, detection.Bounds.Right),
-                                    new SixLabors.ImageSharp.Point(detection.Bounds.Right, detection.Bounds.Top),
-                                    new SixLabors.ImageSharp.Point(detection.Bounds.Left, detection.Bounds.Top) };
+
+                                var rectangle = new SixLabors.ImageSharp.RectangleF(detection.Bounds.X, detection.Bounds.Y, detection.Bounds.Width, detection.Bounds.Height);
 
 
-                                image.Mutate(ctx => ctx.DrawPolygon(Rgba32.ParseHex("FF0000"), 2, rectangle));
+
+                                image.Mutate(ctx => ctx.Draw(Rgba32.ParseHex("FF0000"), 2, rectangle));
                             }
 
                             image.SaveAsPng("output_frame_with_detections.png");
@@ -150,24 +151,6 @@ namespace NewParkingAvailabilityServer
 
                             Cv2.ImShow("YOLO Detections", final);
                             Cv2.WaitKey(0);
-
-
-                            //using var yolo = new Yolo(new YoloOptions
-                            //{
-
-                            //    ExecutionProvider = new CpuExecutionProvider("yolov8n.onnx"),
-
-                            //});
-
-                            //using var image = SKBitmap.Decode("input_frame_with_cones.png");
-
-                            //var results = yolo.RunObjectDetection(image);
-
-                            //image.Draw(results);
-
-
-                            //end of yolo
-
 
                             Mat greydst = new Mat();
 
@@ -306,7 +289,7 @@ namespace NewParkingAvailabilityServer
 
                         //pseudocode starts here
 
-                        //OpenCVResultsItem[] results = new OpenCVResultsItem[2];
+                        OpenCVResultsItem[] results = new OpenCVResultsItem[2];
 
 
                         ////do analysis of the frame for what objects are in the frame
@@ -339,8 +322,17 @@ namespace NewParkingAvailabilityServer
                         //        validObject,
                         //        parkingSpaceStates[index]);
 
+                        results[0] = new OpenCVResultsItem(
+                            spotIds[0],
+                            true,
+                            true);
+
                         //    await sqlManager.createnewOpenCVResultsEntry(results[index]);
                         //    sqlManager.CheckForMicrocontrollerData(spotIds[index]);
+
+                        await sqlManager.createnewOpenCVResultsEntry(results[0]);
+                        sqlManager.CheckForMicrocontrollerData(spotIds[0]);
+
                         //    index++;
                         //}
 
