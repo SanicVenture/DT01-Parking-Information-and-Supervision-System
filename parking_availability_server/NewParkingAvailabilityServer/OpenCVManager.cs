@@ -18,6 +18,7 @@ using Compunet.YoloSharp.Data;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.Fonts;
 
 
 namespace NewParkingAvailabilityServer
@@ -48,7 +49,15 @@ namespace NewParkingAvailabilityServer
 
         public async void StartImageRecognition()
         {
-            Task.Run(ImageRecognition);
+            //Console.WriteLine("Enter Number of Parking Spots:");
+
+            //string input = Console.ReadLine();
+
+            //move parkingspotamount to here!
+
+            Task.Run(() => ImageRecognition(1)); //we are going to support multiple parking spots with tasks.
+            //make sure to add the proper mutexing so that we are not trying to change the sql table at the same time.
+            //this maybe goes for everywhere tbh
         }
 
         //private void MouseCallback(MouseEventTypes @event, int x, int y, MouseEventFlags flags, IntPtr userData)
@@ -56,8 +65,9 @@ namespace NewParkingAvailabilityServer
                 
         //}
 
-        private async void ImageRecognition()
+        private async void ImageRecognition(int Id)
         {
+            string outputPath = $"output_frame_{Id}.bmp";
             using (var capture = new VideoCapture(streamURL))
             {
                 if (!capture.IsOpened())
@@ -65,114 +75,159 @@ namespace NewParkingAvailabilityServer
                     Console.WriteLine("ERROR: could not open camera stream.");
                     return;
                 }
-                //using (var frame = new Mat())
+                using (var frame = new Mat())
                 //using (Mat frame = Cv2.ImRead("input_frame.jpg"))
-                using (Mat frame = Cv2.ImRead("input_frame_with_cones.png"))
+                //using (Mat frame = Cv2.ImRead("input_frame_with_cones.png"))
                 {
                     while (true)
                     {
+                        capture.Read(frame);
+
+                        if (frame.Empty())
+                        {
+                            Thread.Sleep(msTimeout);
+                            continue; //skip the rest of the loop and come back to checking the capture.
+                        }
+                        else
+                        {
+                            //image saving test
+                            // 3. Save the Mat object to a BMP file using Cv2.ImWrite
+                            Cv2.ImWrite(outputPath, frame);
+
+                            Console.WriteLine($"Frame successfully saved to {outputPath}");
+                        }
+
+
                         using (var frameClone = frame.Clone())
                         {
+                            Cv2.PyrDown(frameClone, frameClone);
+
+
                             //Cv2.CvtColor(frame, dest, ColorConversionCodes.BGR2GRAY);
 
                             //Cv2.ImShow("Grayscale Image", dest);
                             //Cv2.WaitKey(0);
 
-                            //Console.WriteLine("Enter Number of Parking Spots:");
-
-                            //string input = Console.ReadLine();
-
-                            //int parkingSpotAmount = int.Parse(input);
-
-                            int parkingSpotAmount = 2;
-
                             //START OF LOOP
 
+                            //if no points saved
 
+                            OpenCvSharp.Point[][]? polygon = sqlManager.OpenPolygonEntry(Id);
 
-                            List<OpenCvSharp.Point> points = new List<OpenCvSharp.Point>();
-
-                            Cv2.NamedWindow("Select ROI");
-                            Cv2.ResizeWindow("Select ROI", frameClone.Size());
-                            Cv2.SetMouseCallback("Select ROI", (MouseEventTypes @event, int x, int y, MouseEventFlags flags, IntPtr userData) =>
+                            if (polygon == null)
                             {
-                                if (@event == MouseEventTypes.LButtonDown)
+
+                                //figure out how to force only 4 points.
+                                List<OpenCvSharp.Point> points = new List<OpenCvSharp.Point>();
+
+                                Cv2.NamedWindow("Select ROI");
+                                Cv2.ResizeWindow("Select ROI", frameClone.Size());
+                                Cv2.SetMouseCallback("Select ROI", (MouseEventTypes @event, int x, int y, MouseEventFlags flags, IntPtr userData) =>
                                 {
-                                    points.Add(new OpenCvSharp.Point(x, y));
-                                    Cv2.Circle(frameClone, new OpenCvSharp.Point(x, y), 3, Scalar.Red, -1);
-                                    Cv2.ImShow("Select ROI", frameClone);
+                                    if (@event == MouseEventTypes.LButtonDown)
+                                    {
+                                        points.Add(new OpenCvSharp.Point(x, y));
+                                        Cv2.Circle(frameClone, new OpenCvSharp.Point(x, y), 3, Scalar.Red, -1);
+                                        Cv2.ImShow("Select ROI", frameClone);
+                                    }
+                                });
+
+                                Cv2.ImShow("Select ROI", frameClone);
+                                Cv2.WaitKey(0);
+
+                                Mat mask = new Mat(frameClone.Size(), MatType.CV_8UC1, Scalar.All(0));
+
+                                if (points.Count > 2)
+                                {
+                                    polygon = [points.ToArray()];
+
+                                    Cv2.FillPoly(mask, polygon, Scalar.All(255)); //fill polygon with white
+
+                                    for (int i = 0; i < polygon[0].Length; i++)
+                                    {
+                                        polygon[0][i].X *= 2;
+                                        polygon[0][i].Y *= 2;
+                                    }
+
+                                    await sqlManager.createNewPolygonEntry(polygon, Id);
                                 }
-                            });
 
-                            Cv2.ImShow("Select ROI", frameClone);
-                            Cv2.WaitKey(0);
+                                Mat dst = new Mat();
+                                Cv2.BitwiseAnd(frameClone, frameClone, dst, mask);
 
-                            Mat mask = new Mat(frameClone.Size(), MatType.CV_8UC1, Scalar.All(0));
-
-                            OpenCvSharp.Point[][] polygon;
-
-                            if (points.Count > 2)
-                            {
-                               polygon = [points.ToArray()];
-
-                                Cv2.FillPoly(mask, polygon, Scalar.All(255)); //fill polygon with white
+                                Cv2.ImShow("ROI", dst);
+                                Cv2.WaitKey(0);
                             }
 
-                            Mat dst = new Mat();
-                            Cv2.BitwiseAnd(frameClone, frameClone, dst, mask);
-
-                            Cv2.ImShow("ROI", dst);
-                            Cv2.WaitKey(0);
 
                             //Cv2.ImWrite("masked_output.png", dst); //should we be using masked output for detection?
-
-                            //instead of what's below, do YOLO algorithm instead. 
-
-
                             using var predictor = new YoloPredictor("yolov8s.onnx");
 
-                            var result = await predictor.DetectAsync("input_frame_with_cones.png");
+                            var result = await predictor.DetectAsync(outputPath);
 
-                            Image<Rgba32> image = SixLabors.ImageSharp.Image.Load<Rgba32>("input_frame_with_cones.png");
+                            Image<Rgba32> image = SixLabors.ImageSharp.Image.Load<Rgba32>(outputPath);
 
                             foreach (var detection in result)
                             {
-
-                                var rectangle = new SixLabors.ImageSharp.RectangleF(detection.Bounds.X, detection.Bounds.Y, detection.Bounds.Width, detection.Bounds.Height);
-
-
-
-                                image.Mutate(ctx => ctx.Draw(Rgba32.ParseHex("FF0000"), 2, rectangle));
+                                var rectangle = new SixLabors.ImageSharp.RectangleF(
+                                    detection.Bounds.X,
+                                    detection.Bounds.Y,
+                                    detection.Bounds.Width,
+                                    detection.Bounds.Height);
+                                image.Mutate(ctx =>
+                                {
+                                    ctx.Draw(Rgba32.ParseHex("FF0000"), 2, rectangle);
+                                    ctx.DrawText(
+                                        detection.Name.Name,
+                                        SystemFonts.CreateFont("Arial", 32),
+                                        Rgba32.ParseHex("FF0000"),
+                                        new SixLabors.ImageSharp.PointF(detection.Bounds.X, detection.Bounds.Y + 20));
+                                });
                             }
+                            var pen = Pens.Solid(SixLabors.ImageSharp.Color.Blue, 3f);
 
-                            image.SaveAsPng("output_frame_with_detections.png");
 
-                            Mat final = Cv2.ImRead("output_frame_with_detections.png");
+                            //convert opencv points to sixlabors points
+                            SixLabors.ImageSharp.PointF[] polygonSixLabors = new SixLabors.ImageSharp.PointF[]
+                            {
+                                new SixLabors.ImageSharp.PointF(polygon[0][0].X, polygon[0][0].Y),
+                                new SixLabors.ImageSharp.PointF(polygon[0][1].X, polygon[0][1].Y),
+                                new SixLabors.ImageSharp.PointF(polygon[0][2].X, polygon[0][2].Y),
+                                new SixLabors.ImageSharp.PointF(polygon[0][3].X, polygon[0][3].Y)
+                            };
+
+                            image.Mutate(ctx =>
+                            {
+                                ctx.DrawPolygon(pen, polygonSixLabors);
+                            });
+
+
+                            image.SaveAsPng($"output_frame_with_detections_{Id}.png");
+
+                            Mat final = Cv2.ImRead($"output_frame_with_detections_{Id}.png");
+                            Cv2.PyrDown(final, final);
 
                             Cv2.ImShow("YOLO Detections", final);
                             Cv2.WaitKey(0);
 
-                            Mat greydst = new Mat();
+                            //Mat greydst = new Mat();
 
-                            Cv2.CvtColor(dst.Clone(), greydst, ColorConversionCodes.BGR2GRAY);
+                            //Cv2.CvtColor(dst.Clone(), greydst, ColorConversionCodes.BGR2GRAY);
 
-                            Cv2.ImShow("Grayscale Image", greydst);
-                            Cv2.WaitKey(0);
+                            //Cv2.ImShow("Grayscale Image", greydst);
+                            //Cv2.WaitKey(0);
 
-                            int pixels = Cv2.CountNonZero(greydst);
+                            //int pixels = Cv2.CountNonZero(greydst);
 
-                            using (var cannyed_image = new Mat())
-                            {
-                                Cv2.Canny(dst, cannyed_image, 100, 200);
+                            //using (var cannyed_image = new Mat())
+                            //{
+                            //    Cv2.Canny(dst, cannyed_image, 100, 200);
 
-                                Cv2.ImShow("Cannyed Image", cannyed_image);
-                                Cv2.WaitKey(0);
+                            //    Cv2.ImShow("Cannyed Image", cannyed_image);
+                            //    Cv2.WaitKey(0);
 
-                                int cannypixels = Cv2.CountNonZero(cannyed_image);
-
-
-
-                            }
+                            //    int cannypixels = Cv2.CountNonZero(cannyed_image);
+                            //}
 
                                 //END OF LOOP
 

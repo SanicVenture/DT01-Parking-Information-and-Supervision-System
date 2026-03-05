@@ -18,8 +18,11 @@ namespace NewParkingAvailabilityServer.Migrations.ObjectInSpot
 
             modelBuilder.Entity("NewParkingAvailabilityServer.Models.ObjectInSpotItem", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("error")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("objectInSpot")

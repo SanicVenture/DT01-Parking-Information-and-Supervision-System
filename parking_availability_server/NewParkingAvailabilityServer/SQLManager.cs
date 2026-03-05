@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 using NewParkingAvailabilityServer.Models;
+using Newtonsoft.Json;
 using System.Linq.Expressions;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -12,12 +13,13 @@ namespace NewParkingAvailabilityServer
         public string psfinalconnectionString = "Data Source=PSFinal.db";
         public string objectinspotconnectionString = "Data Source=ObjectInSpot.db";
         public string opencvconnectionString = "Data Source=OpenCVResults.db";
+        public string opencvpolygonsconnectionString = "Data Source=OpenCVPolygons.db";
 
         public void ChangeSpotFromFinalState(long id)
         {
             PSTotalResultsItem? currentItem = null;
             try
-            { 
+            {
                 using (var conn = new SqliteConnection(psfinalconnectionString))
                 {
                     conn.Open();
@@ -35,19 +37,19 @@ namespace NewParkingAvailabilityServer
                             );
                         }
                     }
-                }            
-            
+                }
+
             }
             catch (SqliteException e)
-            { 
-            
-            
+            {
+
+
             }
 
             if (currentItem is not null)
             {
                 try
-                { 
+                {
                     using (var conn = new SqliteConnection(connectionString))
                     {
                         conn.Open();
@@ -61,7 +63,7 @@ namespace NewParkingAvailabilityServer
                 }
                 catch (SqliteException ex)
                 {
-                
+
                 }
             }
         }
@@ -83,7 +85,8 @@ namespace NewParkingAvailabilityServer
                         {
                             checkedItem = new ObjectInSpotItem(
                                 reader.GetInt32(reader.GetOrdinal("Id")),
-                                Convert.ToBoolean(reader.GetInt32(reader.GetOrdinal("objectInSpot")))
+                                Convert.ToBoolean(reader.GetInt32(reader.GetOrdinal("objectInSpot"))),
+                                reader.GetInt32(reader.GetOrdinal("error"))
                             );
                         }
                     }
@@ -112,12 +115,19 @@ namespace NewParkingAvailabilityServer
 
                     checkedItem = new ObjectInSpotItem(
                         1, //hardcoded ID for now.
-                        Convert.ToBoolean(occupied)
+                        Convert.ToBoolean(occupied),
+                        error
                     );
+
+
                 }
                 catch (Exception e)
                 {
-
+                    checkedItem = new ObjectInSpotItem(
+                        1, //hardcoded ID for now.
+                        true,
+                        0
+                    );
                 }
             }
 
@@ -229,7 +239,8 @@ namespace NewParkingAvailabilityServer
                             {
                                 objectInSpotItem = new ObjectInSpotItem(
                                     reader.GetInt32(reader.GetOrdinal("Id")),
-                                    Convert.ToBoolean(reader.GetInt32(reader.GetOrdinal("objectInSpot")))
+                                    Convert.ToBoolean(reader.GetInt32(reader.GetOrdinal("objectInSpot"))),
+                                    reader.GetInt32(reader.GetOrdinal("error"))
                                 );
                             }
                         }
@@ -342,5 +353,67 @@ namespace NewParkingAvailabilityServer
 
             }
         }
+
+        //add a thing where we jsonify the polygons and save them in the sql table.
+
+        public async Task createNewPolygonEntry(OpenCvSharp.Point[][] todoItem, int Id)
+        {
+
+            
+            //OpenCVPolygonsItem newItem = new OpenCVPolygonsItem(
+            //    Id,
+            //    jsonPolygons
+            //);
+            try
+            {
+                using (var conn = new SqliteConnection(opencvpolygonsconnectionString))
+                {
+                    conn.Open();
+                    var command = conn.CreateCommand();
+                    string jsonPolygons = JsonConvert.SerializeObject(todoItem);
+                    command.CommandText = $"INSERT INTO OpenCVPolygonsItems " +
+                        $"VALUES ({Id}," +
+                        $" '{jsonPolygons}')";
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (SqliteException ex)
+            {
+
+            }
+        }
+
+        public OpenCvSharp.Point[][] OpenPolygonEntry(int Id)
+        {
+            OpenCvSharp.Point[][]? polygons = null;
+
+            try
+            {
+                using (var conn = new SqliteConnection(opencvpolygonsconnectionString))
+                {
+                    conn.Open();
+                    var command = conn.CreateCommand();
+                    command.CommandText = $"SELECT * FROM OpenCVPolygonsItems WHERE Id={Id};";
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            polygons = JsonConvert.DeserializeObject<OpenCvSharp.Point[][]>(reader.GetString(reader.GetOrdinal("polygonPoints")));
+                        }
+                    }
+                }
+            }
+
+            catch (SqliteException ex)
+            {
+
+            }
+
+            return polygons;
+        }
+
     }
+
+
+
 }
