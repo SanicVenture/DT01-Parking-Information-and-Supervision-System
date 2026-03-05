@@ -47,7 +47,7 @@ const uint8_t echo = PC0; // PC0
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 IPAddress ip(10, 18, 28, 240);
 EthernetServer server(80);
-const uint8_t w5500_cs = PA4; // CS for W5500 (wire this pin to W5500 CS)
+const uint8_t w5500_cs = PB6; // CS for W5500 (wire this pin to W5500 CS)
 
 /* C entry points called from Arduino-compatible C++ wrappers */
 void setup(void)
@@ -99,7 +99,16 @@ void setup(void)
 
 void loop(void)
 {
-  int dist = calc_dist();
+  // defined average distance variable to reduce noise in measurements
+  int dist = 0;
+  // taking three measurements and averaging to reduce noise
+  int dist1 = calc_dist();
+  HAL_Delay(100);
+  int dist2 = calc_dist();
+  HAL_Delay(100);
+  int dist3 = calc_dist();
+  // average the three measurements
+  dist = (dist1 + dist2 + dist3) / 3;
   Serial.print("Distance: ");
   Serial.print(dist);
   Serial.println(" cm");
