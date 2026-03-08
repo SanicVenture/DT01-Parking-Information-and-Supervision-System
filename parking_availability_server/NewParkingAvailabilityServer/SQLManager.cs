@@ -104,31 +104,31 @@ namespace NewParkingAvailabilityServer
 
             if (checkedItem is null)
             {
-                try
-                {
-                    var http = new HttpClient();
-                    var json = await http.GetStringAsync("http://10.18.28.240/");
+                //try
+                //{
+                //    var http = new HttpClient();
+                //    var json = await http.GetStringAsync("http://10.18.28.240/");
 
-                    var doc = JsonDocument.Parse(json);
-                    int occupied = doc.RootElement.GetProperty("occupied").GetInt32();
-                    int error = doc.RootElement.GetProperty("error").GetInt32();
+                //    var doc = JsonDocument.Parse(json);
+                //    int occupied = doc.RootElement.GetProperty("occupied").GetInt32();
+                //    int error = doc.RootElement.GetProperty("error").GetInt32();
 
-                    checkedItem = new ObjectInSpotItem(
-                        1, //hardcoded ID for now.
-                        Convert.ToBoolean(occupied),
-                        error
-                    );
+                //    checkedItem = new ObjectInSpotItem(
+                //        1, //hardcoded ID for now.
+                //        Convert.ToBoolean(occupied),
+                //        error
+                //    );
 
 
-                }
-                catch (Exception e)
-                {
+                //}
+                //catch (Exception e)
+                //{
                     checkedItem = new ObjectInSpotItem(
                         1, //hardcoded ID for now.
                         true,
                         0
                     );
-                }
+                //}
             }
 
 

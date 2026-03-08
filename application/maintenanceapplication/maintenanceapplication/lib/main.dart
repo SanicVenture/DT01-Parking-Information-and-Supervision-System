@@ -302,7 +302,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     // futureParkingSpace = fetchParkingSpace();
     futureParkingSpaces = fetchParkingSpaces();
-    _timer = Timer.periodic(const Duration(seconds: 10), (Timer t) {
+    _timer = Timer.periodic(const Duration(seconds: 5), (Timer t) {
       setState(() {
         futureParkingSpaces = fetchParkingSpaces();
       });

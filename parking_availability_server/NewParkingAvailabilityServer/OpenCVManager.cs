@@ -28,11 +28,12 @@ namespace NewParkingAvailabilityServer
         private SQLManager sqlManager = new SQLManager();
         private string streamURL = "rtsp://admin:Password@10.18.31.38:554";
         private int msTimeout = 120000;
-        private int[] spotIds = [1, 2]; //example parking spot IDs
+        private int[] spotIds = [1]; //example parking spot IDs
+        private bool showDetections = true;
 
         //This string array of acceptable vehicles is just an example of what the
         //OpenCV implementation will look for.
-        private string[] acceptableVehicles = ["car", "motorcycle", "van", "truck"];
+        private string[] acceptableVehicles = ["car", "motorcycle", "van", "truck", "bus"];
 
         private Mat DrawLines(Mat image, LineSegmentPoint[] lines, Scalar color, int thickness = 3)
         {
@@ -55,7 +56,12 @@ namespace NewParkingAvailabilityServer
 
             //move parkingspotamount to here!
 
-            Task.Run(() => ImageRecognition(1)); //we are going to support multiple parking spots with tasks.
+            //Maybe do some serious rewrites to properly support multiple parking spots. 
+            foreach (int Id in spotIds)
+            {
+                Task.Run(() => ImageRecognition(Id)); //we are going to support multiple parking spots with tasks.
+            }
+
             //make sure to add the proper mutexing so that we are not trying to change the sql table at the same time.
             //this maybe goes for everywhere tbh
         }
@@ -173,10 +179,10 @@ namespace NewParkingAvailabilityServer
 
                             //START OF LOOP
 
-                            //if no points saved
-
                             OpenCvSharp.Point[][]? polygon = sqlManager.OpenPolygonEntry(Id);
 
+
+                            //if no points saved...
                             if (polygon == null)
                             {
 
@@ -258,7 +264,7 @@ namespace NewParkingAvailabilityServer
                                 }
                                 else if (objectInParkingSpace[0] && objectInParkingSpace[1])
                                 {
-                                    if ((detection.Name.Name == "car" || detection.Name.Name == "motorcycle" || detection.Name.Name == "van" || detection.Name.Name == "truck" || detection.Name.Name == "bus"))
+                                    if (acceptableVehicles.Contains(detection.Name.Name))
                                     {
                                         openCVresult = new OpenCVResultsItem(Id, true, true);
                                         break;
@@ -274,34 +280,40 @@ namespace NewParkingAvailabilityServer
                             }
 
                             await sqlManager.createnewOpenCVResultsEntry(openCVresult);
-                            sqlManager.CheckForMicrocontrollerData(Id);
+                            await sqlManager.CheckForMicrocontrollerData(Id);
 
 
-                            var pen = Pens.Solid(SixLabors.ImageSharp.Color.Blue, 3f);
+                            //EVERYTHING BELOW SHOULD BE TOGGLEABLE SO THAT THE FLOW OF CODE IS NOT INTERRUPTED!
 
-
-                            //convert opencv points to sixlabors points
-                            SixLabors.ImageSharp.PointF[] polygonSixLabors = new SixLabors.ImageSharp.PointF[]
+                            if (showDetections == true)
                             {
-                                new SixLabors.ImageSharp.PointF(polygon[0][0].X, polygon[0][0].Y),
-                                new SixLabors.ImageSharp.PointF(polygon[0][1].X, polygon[0][1].Y),
-                                new SixLabors.ImageSharp.PointF(polygon[0][2].X, polygon[0][2].Y),
-                                new SixLabors.ImageSharp.PointF(polygon[0][3].X, polygon[0][3].Y)
-                            };
-
-                            image.Mutate(ctx =>
-                            {
-                                ctx.DrawPolygon(pen, polygonSixLabors);
-                            });
+                                var pen = Pens.Solid(SixLabors.ImageSharp.Color.Blue, 3f);
 
 
-                            image.SaveAsPng($"output_frame_with_detections_{Id}.png");
+                                //convert opencv points to sixlabors points
+                                SixLabors.ImageSharp.PointF[] polygonSixLabors = new SixLabors.ImageSharp.PointF[]
+                                {
+                                    new SixLabors.ImageSharp.PointF(polygon[0][0].X, polygon[0][0].Y),
+                                    new SixLabors.ImageSharp.PointF(polygon[0][1].X, polygon[0][1].Y),
+                                    new SixLabors.ImageSharp.PointF(polygon[0][2].X, polygon[0][2].Y),
+                                    new SixLabors.ImageSharp.PointF(polygon[0][3].X, polygon[0][3].Y)
+                                };
 
-                            Mat final = Cv2.ImRead($"output_frame_with_detections_{Id}.png");
-                            Cv2.PyrDown(final, final);
+                                image.Mutate(ctx =>
+                                {
+                                    ctx.DrawPolygon(pen, polygonSixLabors);
+                                });
 
-                            Cv2.ImShow("YOLO Detections", final);
-                            Cv2.WaitKey(0);
+
+                                image.SaveAsPng($"output_frame_with_detections_{Id}.png");
+
+                                Mat final = Cv2.ImRead($"output_frame_with_detections_{Id}.png");
+                                Cv2.PyrDown(final, final);
+
+                                Cv2.ImShow("YOLO Detections", final);
+                                Cv2.WaitKey(0);
+                            }
+
 
                             //Mat greydst = new Mat();
 
