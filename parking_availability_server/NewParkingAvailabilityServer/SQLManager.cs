@@ -172,23 +172,27 @@ namespace NewParkingAvailabilityServer
 
                 PSTotalResultsItem currentItem = new PSTotalResultsItem(openCVCorrespondingItem, checkedItem);
 
-                try
+                if (currentItem.Id != -1)
                 {
-                    using (var conn = new SqliteConnection(connectionString))
+                    try
                     {
-                        conn.Open();
-                        var command = conn.CreateCommand();
-                        command.CommandText = $"UPDATE ParkingSpaceItems SET " +
-                            $"occupied={currentItem.convertedSpot.occupied}, " +
-                            $"maintenanceAlert={currentItem.convertedSpot.maintenanceAlert} " +
-                            $"WHERE id={currentItem.Id}";
-                        command.ExecuteNonQuery();
+                        using (var conn = new SqliteConnection(connectionString))
+                        {
+                            conn.Open();
+                            var command = conn.CreateCommand();
+                            command.CommandText = $"UPDATE ParkingSpaceItems SET " +
+                                $"occupied={currentItem.convertedSpot.occupied}, " +
+                                $"maintenanceAlert={currentItem.convertedSpot.maintenanceAlert} " +
+                                $"WHERE id={currentItem.Id}";
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                    catch (SqliteException ex)
+                    {
+
                     }
                 }
-                catch (SqliteException ex)
-                {
 
-                }
             }
         }
 

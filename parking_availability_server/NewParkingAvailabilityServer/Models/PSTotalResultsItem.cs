@@ -2,7 +2,7 @@
 {
     public class PSTotalResultsItem
     {
-        public int Id { get; set; }
+        public int Id { get; set; } = -1;
         public bool vehicle { get; set; }
         public bool objectInSpot { get; set; }
         public bool parkingSpaceObstructed { get; set; }
@@ -11,7 +11,7 @@
 
         public PSTotalResultsItem(OpenCVResultsItem openCVResultsItem, ObjectInSpotItem objectInSpotItem)
         {
-            if (openCVResultsItem.Id == objectInSpotItem.Id)
+            if (openCVResultsItem != null && objectInSpotItem != null && openCVResultsItem.Id == objectInSpotItem.Id)
             {
                 Id = openCVResultsItem.Id;
                 vehicle = openCVResultsItem.vehicle;

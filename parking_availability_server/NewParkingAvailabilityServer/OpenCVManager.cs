@@ -19,7 +19,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.Fonts;
-
+using Clipper2Lib;
 
 namespace NewParkingAvailabilityServer
 {
@@ -65,22 +65,85 @@ namespace NewParkingAvailabilityServer
                 
         //}
 
+        private bool[] RectangleChecker(Detection detection, OpenCvSharp.Point[][]? polygon)
+        {
+            int[] ints = new int[polygon.Length];
+            int furthestLeftPoint = polygon[0][0].X;
+            foreach (OpenCvSharp.Point point in polygon[0])
+            {
+                if (point.X < furthestLeftPoint)
+                {
+                    furthestLeftPoint = point.X;
+                }
+            }
+
+            int topLeftX = detection.Bounds.X;
+            int topLeftY = detection.Bounds.Y;
+            int bottomRightX = detection.Bounds.X + detection.Bounds.Width;
+            int bottomRightY = detection.Bounds.Y + detection.Bounds.Height;
+
+            //first we check if the detection rectangle could intersect or be within with the parking spot polygon. If it not, then we can return false immediately.
+            if (!((topLeftX < furthestLeftPoint) && (bottomRightX < furthestLeftPoint)))
+            {
+                //converting the detection rectangle to Clipper Points and Paths.
+                Path64 detectionPath = new Path64();
+                detectionPath.Add(new Point64(topLeftX, topLeftY));
+                detectionPath.Add(new Point64(bottomRightX, topLeftY));
+                detectionPath.Add(new Point64(bottomRightX, bottomRightY));
+                detectionPath.Add(new Point64(topLeftX, bottomRightY));
+
+                Path64 polygonPath = new Path64();
+                foreach (OpenCvSharp.Point point in polygon[0])
+                {
+                    polygonPath.Add(new Point64(point.X, point.Y));
+                }
+
+                double polygonArea = Clipper.Area(polygonPath);
+
+                Paths64 detectionPaths = new Paths64 { detectionPath };
+                Paths64 polygonPaths = new Paths64 { polygonPath };
+                Paths64 solution = new Paths64();
+
+                //Finding the Intersection between the detection rectangle and the parking space
+                solution = Clipper.Intersect(detectionPaths, polygonPaths, FillRule.NonZero);
+
+                double overlapArea = 0;
+                foreach (Path64 path in solution)
+                {
+                    overlapArea += Clipper.Area(path);
+                }
+
+                int objectArea = detection.Bounds.Width * detection.Bounds.Height;
+
+                //the area of overlap has to be at least 50% of the area of the object that is doing the overlapping.
+
+                double decimalOverlap = (overlapArea / objectArea);
+
+                //first boolean weeds out overlaps that are basically negligible, the second boolean tells proper overlaps.
+                return [decimalOverlap >= 0.1, decimalOverlap >= 0.5];
+            }
+
+            return [false, false]; //placeholder return value
+        }
+
         private async void ImageRecognition(int Id)
         {
             string outputPath = $"output_frame_{Id}.bmp";
-            using (var capture = new VideoCapture(streamURL))
+            while (true)
             {
-                if (!capture.IsOpened())
+                using (var capture = new VideoCapture(streamURL))
                 {
-                    Console.WriteLine("ERROR: could not open camera stream.");
-                    return;
-                }
-                using (var frame = new Mat())
-                //using (Mat frame = Cv2.ImRead("input_frame.jpg"))
-                //using (Mat frame = Cv2.ImRead("input_frame_with_cones.png"))
-                {
-                    while (true)
+                    if (!capture.IsOpened())
                     {
+                        Console.WriteLine("ERROR: could not open camera stream.");
+                        return;
+                    } 
+
+                    using (var frame = new Mat())
+                    //using (Mat frame = Cv2.ImRead("input_frame.jpg"))
+                    //using (Mat frame = Cv2.ImRead("input_frame_with_cones.png"))
+                    {
+
                         capture.Read(frame);
 
                         if (frame.Empty())
@@ -163,11 +226,13 @@ namespace NewParkingAvailabilityServer
                             //Cv2.ImWrite("masked_output.png", dst); //should we be using masked output for detection?
                             using var predictor = new YoloPredictor("yolov8s.onnx");
 
-                            var result = await predictor.DetectAsync(outputPath);
+                            YoloResult<Detection> result = await predictor.DetectAsync(outputPath);
 
                             Image<Rgba32> image = SixLabors.ImageSharp.Image.Load<Rgba32>(outputPath);
 
-                            foreach (var detection in result)
+                            OpenCVResultsItem openCVresult = new OpenCVResultsItem(Id, false, false);
+
+                            foreach (Detection detection in result)
                             {
                                 var rectangle = new SixLabors.ImageSharp.RectangleF(
                                     detection.Bounds.X,
@@ -183,7 +248,35 @@ namespace NewParkingAvailabilityServer
                                         Rgba32.ParseHex("FF0000"),
                                         new SixLabors.ImageSharp.PointF(detection.Bounds.X, detection.Bounds.Y + 20));
                                 });
+
+                                bool[] objectInParkingSpace = RectangleChecker(detection, polygon);
+                                //first boolean is is object in spot, second boolean is if the boolean is properly in the spot. 
+
+                                if (objectInParkingSpace[0] && !objectInParkingSpace[1])
+                                {
+                                    openCVresult = new OpenCVResultsItem(Id, false, true);
+                                }
+                                else if (objectInParkingSpace[0] && objectInParkingSpace[1])
+                                {
+                                    if ((detection.Name.Name == "car" || detection.Name.Name == "motorcycle" || detection.Name.Name == "van" || detection.Name.Name == "truck" || detection.Name.Name == "bus"))
+                                    {
+                                        openCVresult = new OpenCVResultsItem(Id, true, true);
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        openCVresult = new OpenCVResultsItem(Id, false, true);
+                                    }
+                                }
+
+                                //if those don't pass, here will be where the more classical detection of objects could be thrown in. 
+
                             }
+
+                            await sqlManager.createnewOpenCVResultsEntry(openCVresult);
+                            sqlManager.CheckForMicrocontrollerData(Id);
+
+
                             var pen = Pens.Solid(SixLabors.ImageSharp.Color.Blue, 3f);
 
 
@@ -321,79 +414,8 @@ namespace NewParkingAvailabilityServer
                                 #endregion
 
                             }
-                        //KEEP BELOW. Actual Code
-                        //capture.Read(frame);
-
-                        //if (frame.Empty())
-                        //{
-                        //    Thread.Sleep(msTimeout);
-                        //    continue;
-                        //}
-                        //else
-                        //{
-                        //    //image saving test
-                        //    string outputPath = "output_frame.bmp";
-
-                        //    // 3. Save the Mat object to a BMP file using Cv2.ImWrite
-                        //    Cv2.ImWrite(outputPath, frame);
-
-                        //    Console.WriteLine($"Frame successfully saved to {outputPath}");
-                        //}
-
-                        //END OF REAL CODE TO KEEP
-
-                        //pseudocode starts here
-
-                        OpenCVResultsItem[] results = new OpenCVResultsItem[2];
-
-
-                        ////do analysis of the frame for what objects are in the frame
-                        ////GetFrameObjects still needs to be created
-                        //string[][] listOfObjectsInPhoto = GetFrameObjects(frame);
-
-                        ////do analysis of the frame for whether the parking spot is
-                        ////obstructed or not
-                        ////GetParkingSpotFrame still needs to be created
-                        //bool[] parkingSpaceStates = GetParkingSpotState(frame);
-
-
-                        //int index = 0;
-
-                        ////the foreach loop checks for whether the parking space objects
-                        ////are acceptable to be in the parking space.
-                        //foreach (string[] parkingSpaceObjects in listOfObjectsInPhoto)
-                        //{
-                        //    bool validObject = false;
-                        //    foreach (string objectInSpot in parkingSpaceObjects)
-                        //    {
-                        //        if (acceptableVehicles.Contains(objectInSpot))
-                        //        {
-                        //            validObject = true;
-                        //            break;
-                        //        }
-                        //    }
-                        //    results[index] = new OpenCVResultsItem(
-                        //        spotIds[index],
-                        //        validObject,
-                        //        parkingSpaceStates[index]);
-
-                        results[0] = new OpenCVResultsItem(
-                            spotIds[0],
-                            true,
-                            true);
-
-                        //    await sqlManager.createnewOpenCVResultsEntry(results[index]);
-                        //    sqlManager.CheckForMicrocontrollerData(spotIds[index]);
-
-                        await sqlManager.createnewOpenCVResultsEntry(results[0]);
-                        sqlManager.CheckForMicrocontrollerData(spotIds[0]);
-
-                        //    index++;
-                        //}
 
                         //Thread.Sleep(msTimeout);
-
-                        //end pseudocode
                     }
                 }
             }
