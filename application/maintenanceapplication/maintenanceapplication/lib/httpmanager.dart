@@ -5,7 +5,7 @@ import 'dart:convert';
 final String localUrl = 'https://localhost:7288/api';
 // final String remoteUrl = 'https://192.168.1.31:3124/api';
 // final String remoteUrl = 'https://10.217.52.241:3124/api';
-final String remoteUrl = 'https://10.105.0.6:3124/api';
+final String remoteUrl = 'https://10.105.0.12:3124/api';
 final bool isAndroid = Platform.isAndroid;
 final bool isDesktop = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
@@ -31,6 +31,90 @@ class ParkingSpace {
   }
 }
 
+class PSTotalResults {
+  final int id;
+  final bool vehicle;
+  final bool objectInSpot;
+  final bool parkingSpaceObstructed;
+
+  const PSTotalResults({
+    required this.id,
+    required this.vehicle,
+    required this.objectInSpot,
+    required this.parkingSpaceObstructed,
+  });
+
+  factory PSTotalResults.fromJson(Map<String, dynamic> json) {
+    return switch (json) {
+      {'id': int id, 'vehicle': bool vehicle, 'objectInSpot': bool objectInSpot, 'parkingSpaceObstructed': bool parkingSpaceObstructed, 'convertedSpot': dynamic convertedSpot} =>
+        PSTotalResults(id: id, vehicle: vehicle, objectInSpot: objectInSpot, parkingSpaceObstructed: parkingSpaceObstructed),
+      _ => throw Exception('Invalid JSON format for PSTotalResults'),
+    };
+  }
+}
+
+class CompleteParkingSpace
+{
+  final int id;
+  final int floor;
+  final bool occupied;
+  final bool maintenanceAlert;
+  final bool vehicleStatus;
+  final bool objectInSpot;
+  final bool parkingSpaceObstructed;
+
+  const CompleteParkingSpace({
+    required this.id,
+    required this.floor,
+    required this.occupied,
+    required this.maintenanceAlert,
+    required this.vehicleStatus,
+    required this.objectInSpot,
+    required this.parkingSpaceObstructed,
+  });
+
+  factory CompleteParkingSpace.fromParkingSpaceAndPSTotalResults(ParkingSpace parkingSpace, PSTotalResults psTotalResults) {
+    return CompleteParkingSpace(
+      id: parkingSpace.id,
+      floor: parkingSpace.floor,
+      occupied: parkingSpace.occupied,
+      maintenanceAlert: parkingSpace.maintenanceAlert,
+      vehicleStatus: psTotalResults.vehicle,
+      objectInSpot: psTotalResults.objectInSpot,
+      parkingSpaceObstructed: psTotalResults.parkingSpaceObstructed,
+    );
+  }
+}
+
+convertParkingSpaceToVehicleStatus(ParkingSpace parkingSpace) {
+  if (parkingSpace.occupied && !parkingSpace.maintenanceAlert) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+convertParkingSpaceToObstructedStatus(ParkingSpace parkingSpace) {
+  if (!parkingSpace.occupied && parkingSpace.maintenanceAlert) {
+    return true;
+  } else if (parkingSpace.occupied) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+Future<List<CompleteParkingSpace>> fetchCompleteParkingSpaces() async {
+  final parkingSpaces = await fetchParkingSpaces();
+  final psTotalResults = await fetchPSTotalResults();
+
+  return parkingSpaces.map((space) {
+    final psTotalResult = psTotalResults.firstWhere((result) => result.id == space.id, 
+    orElse: () => PSTotalResults(id: space.id, vehicle: convertParkingSpaceToVehicleStatus(space), objectInSpot: space.occupied, parkingSpaceObstructed: convertParkingSpaceToObstructedStatus(space)));
+    return CompleteParkingSpace.fromParkingSpaceAndPSTotalResults(space, psTotalResult);
+  }).toList();
+}
+
 Future<List<ParkingSpace>> fetchParkingSpaces() async {
   final response =
       await http.get(Uri.parse('${isAndroid ? remoteUrl : localUrl}/parkingspaceitems/'));
@@ -39,6 +123,20 @@ Future<List<ParkingSpace>> fetchParkingSpaces() async {
     final List<dynamic> jsonList = jsonDecode(response.body);
     return jsonList
         .map((json) => ParkingSpace.fromJson(json as Map<String, dynamic>))
+        .toList();
+  } else {
+    throw Exception('Failed to load parking space');
+  }
+}
+
+Future<List<PSTotalResults>> fetchPSTotalResults() async {
+  final response =
+      await http.get(Uri.parse('${isAndroid ? remoteUrl : localUrl}/pstotalresultsitems/'));
+
+  if (response.statusCode == 200) {
+    final List<dynamic> jsonList = jsonDecode(response.body);
+    return jsonList
+        .map((json) => PSTotalResults.fromJson(json as Map<String, dynamic>))
         .toList();
   } else {
     throw Exception('Failed to load parking space');

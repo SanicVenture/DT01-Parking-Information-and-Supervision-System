@@ -1,4 +1,6 @@
-﻿namespace NewParkingAvailabilityServer.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace NewParkingAvailabilityServer.Models
 {
     public class PSTotalResultsItem
     {
@@ -7,7 +9,8 @@
         public bool objectInSpot { get; set; }
         public bool parkingSpaceObstructed { get; set; }
 
-        public ParkingSpaceItem convertedSpot { get; set; }
+        [NotMapped]
+        public ParkingSpaceItem? convertedSpot { get; set; } = null;
 
         public PSTotalResultsItem(OpenCVResultsItem openCVResultsItem, ObjectInSpotItem objectInSpotItem)
         {

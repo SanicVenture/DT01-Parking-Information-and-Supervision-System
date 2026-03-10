@@ -23,12 +23,17 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: MyHomePage(title: 'Parking Lot Entrance Information'),
+    final double textScaleFactor = 3;
+
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScaleFactor)),
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        ),
+        home: MyHomePage(title: 'Parking Lot Entrance Information'),
+      )
     );
   }
 }
@@ -101,13 +106,18 @@ class _MyHomePageState extends State<MyHomePage> {
             }
 
             return ListView.builder(
-              itemCount: ByFloorList.length,
+              itemCount: ByFloorList.length + 1,
               itemBuilder: (context, index) {
+                if (index == 0) {
+                  return ListTile(
+                    title: Text('Open Spots: ${AvailablePerFloor.reduce((a, b) => a + b)}'),
+                  );
+                }
                 return ListTile(
-                  title: Text('Floor: ${index + 1}'),
+                  title: Text('Floor: ${index}'),
                   subtitle: 
                   Text(
-                    'Available Spots: ${AvailablePerFloor[index]}\nTotal Spots: ${ByFloorList[index].length}'
+                    'Open Spots: ${AvailablePerFloor[index - 1]}'
                     ),
                 );
               },

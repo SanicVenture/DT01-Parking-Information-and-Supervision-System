@@ -27,26 +27,13 @@ namespace NewParkingAvailabilityServer
     {
         private SQLManager sqlManager = new SQLManager();
         private string streamURL = "rtsp://admin:Password@10.18.31.38:554";
-        private int msTimeout = 120000;
+        private int msTimeout = 12000;
         private int[] spotIds = [1]; //example parking spot IDs
         private bool showDetections = true;
 
         //This string array of acceptable vehicles is just an example of what the
         //OpenCV implementation will look for.
         private string[] acceptableVehicles = ["car", "motorcycle", "van", "truck", "bus"];
-
-        private Mat DrawLines(Mat image, LineSegmentPoint[] lines, Scalar color, int thickness = 3)
-        {
-            //image = new Mat(image);
-            Mat line_image = new Mat(image.Size(), image.Type());
-            foreach (LineSegmentPoint line in lines)
-            {
-                Cv2.Line(line_image, line.P1.X, line.P1.Y, line.P2.X, line.P2.Y, color, thickness);
-            }
-            Cv2.AddWeighted(image, 0.8, line_image, 1.0, 0.0, image);
-
-            return image;
-        }
 
         public async void StartImageRecognition()
         {
@@ -66,11 +53,6 @@ namespace NewParkingAvailabilityServer
             //this maybe goes for everywhere tbh
         }
 
-        //private void MouseCallback(MouseEventTypes @event, int x, int y, MouseEventFlags flags, IntPtr userData)
-        //{
-                
-        //}
-
         private bool[] RectangleChecker(Detection detection, OpenCvSharp.Point[][]? polygon)
         {
             int[] ints = new int[polygon.Length];
@@ -83,20 +65,21 @@ namespace NewParkingAvailabilityServer
                 }
             }
 
-            int topLeftX = detection.Bounds.X;
-            int topLeftY = detection.Bounds.Y;
-            int bottomRightX = detection.Bounds.X + detection.Bounds.Width;
-            int bottomRightY = detection.Bounds.Y + detection.Bounds.Height;
+            int leftX = detection.Bounds.X;
+            int topY = detection.Bounds.Y;
+            int rightX = detection.Bounds.X + detection.Bounds.Width;
+            int bottomY = detection.Bounds.Y + detection.Bounds.Height;
 
             //first we check if the detection rectangle could intersect or be within with the parking spot polygon. If it not, then we can return false immediately.
-            if (!((topLeftX < furthestLeftPoint) && (bottomRightX < furthestLeftPoint)))
+            if (!((leftX < furthestLeftPoint) && (rightX < furthestLeftPoint)))
             {
                 //converting the detection rectangle to Clipper Points and Paths.
-                Path64 detectionPath = new Path64();
-                detectionPath.Add(new Point64(topLeftX, topLeftY));
-                detectionPath.Add(new Point64(bottomRightX, topLeftY));
-                detectionPath.Add(new Point64(bottomRightX, bottomRightY));
-                detectionPath.Add(new Point64(topLeftX, bottomRightY));
+                Path64 detectionPath = new Path64([
+                    new Point64(leftX, topY),
+                    new Point64(rightX, topY),
+                    new Point64(rightX, bottomY),
+                    new Point64(leftX, bottomY)
+                ]);
 
                 Path64 polygonPath = new Path64();
                 foreach (OpenCvSharp.Point point in polygon[0])
@@ -138,11 +121,15 @@ namespace NewParkingAvailabilityServer
             while (true)
             {
                 using (var capture = new VideoCapture(streamURL))
+                //using (var capture = new VideoCapture())
                 {
                     if (!capture.IsOpened())
                     {
                         Console.WriteLine("ERROR: could not open camera stream.");
-                        return;
+                        await sqlManager.CheckForMicrocontrollerData(Id);
+                        Thread.Sleep(msTimeout);
+                        //need to add a proper camera error state.
+                        continue;
                     } 
 
                     using (var frame = new Mat())
@@ -170,7 +157,6 @@ namespace NewParkingAvailabilityServer
                         using (var frameClone = frame.Clone())
                         {
                             Cv2.PyrDown(frameClone, frameClone);
-
 
                             //Cv2.CvtColor(frame, dest, ColorConversionCodes.BGR2GRAY);
 
@@ -212,6 +198,8 @@ namespace NewParkingAvailabilityServer
 
                                     Cv2.FillPoly(mask, polygon, Scalar.All(255)); //fill polygon with white
 
+                                    //Need to scale the points back up to the original frame size before saving
+                                    //to the database, since the user is selecting points on a downscaled version of the frame.
                                     for (int i = 0; i < polygon[0].Length; i++)
                                     {
                                         polygon[0][i].X *= 2;
@@ -279,39 +267,42 @@ namespace NewParkingAvailabilityServer
 
                             }
 
-                            await sqlManager.createnewOpenCVResultsEntry(openCVresult);
+                            await sqlManager.CreateNewOpenCVResultsEntry(openCVresult);
                             await sqlManager.CheckForMicrocontrollerData(Id);
 
+                            var pen = Pens.Solid(SixLabors.ImageSharp.Color.Blue, 3f);
 
-                            //EVERYTHING BELOW SHOULD BE TOGGLEABLE SO THAT THE FLOW OF CODE IS NOT INTERRUPTED!
+
+                            //convert opencv points to sixlabors points
+                            SixLabors.ImageSharp.PointF[] polygonSixLabors = new SixLabors.ImageSharp.PointF[]
+                            {
+                                new SixLabors.ImageSharp.PointF(polygon[0][0].X, polygon[0][0].Y),
+                                new SixLabors.ImageSharp.PointF(polygon[0][1].X, polygon[0][1].Y),
+                                new SixLabors.ImageSharp.PointF(polygon[0][2].X, polygon[0][2].Y),
+                                new SixLabors.ImageSharp.PointF(polygon[0][3].X, polygon[0][3].Y)
+                            };
+
+                            image.Mutate(ctx =>
+                            {
+                                ctx.DrawPolygon(pen, polygonSixLabors);
+                            });
+
+
+                            image.SaveAsPng($"output_frame_with_detections_{Id}.png");
 
                             if (showDetections == true)
                             {
-                                var pen = Pens.Solid(SixLabors.ImageSharp.Color.Blue, 3f);
-
-
-                                //convert opencv points to sixlabors points
-                                SixLabors.ImageSharp.PointF[] polygonSixLabors = new SixLabors.ImageSharp.PointF[]
-                                {
-                                    new SixLabors.ImageSharp.PointF(polygon[0][0].X, polygon[0][0].Y),
-                                    new SixLabors.ImageSharp.PointF(polygon[0][1].X, polygon[0][1].Y),
-                                    new SixLabors.ImageSharp.PointF(polygon[0][2].X, polygon[0][2].Y),
-                                    new SixLabors.ImageSharp.PointF(polygon[0][3].X, polygon[0][3].Y)
-                                };
-
-                                image.Mutate(ctx =>
-                                {
-                                    ctx.DrawPolygon(pen, polygonSixLabors);
-                                });
-
-
-                                image.SaveAsPng($"output_frame_with_detections_{Id}.png");
 
                                 Mat final = Cv2.ImRead($"output_frame_with_detections_{Id}.png");
                                 Cv2.PyrDown(final, final);
 
                                 Cv2.ImShow("YOLO Detections", final);
                                 Cv2.WaitKey(0);
+                            }
+
+                            else
+                            {
+                                //Thread.Sleep(msTimeout);
                             }
 
 
@@ -426,8 +417,6 @@ namespace NewParkingAvailabilityServer
                                 #endregion
 
                             }
-
-                        //Thread.Sleep(msTimeout);
                     }
                 }
             }

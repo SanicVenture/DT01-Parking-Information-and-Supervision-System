@@ -294,17 +294,17 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   // late Future<ParkingSpace> futureParkingSpace;
-  late Future<List<ParkingSpace>> futureParkingSpaces;
+  late Future<List<CompleteParkingSpace>> futureParkingSpaces;
   Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     // futureParkingSpace = fetchParkingSpace();
-    futureParkingSpaces = fetchParkingSpaces();
+    futureParkingSpaces = fetchCompleteParkingSpaces();
     _timer = Timer.periodic(const Duration(seconds: 5), (Timer t) {
       setState(() {
-        futureParkingSpaces = fetchParkingSpaces();
+        futureParkingSpaces = fetchCompleteParkingSpaces();
       });
     });
 
@@ -319,7 +319,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void _addParkingSpace() async {
     await createNewParkingSpace();
     setState(() {
-      futureParkingSpaces = fetchParkingSpaces();
+      futureParkingSpaces = fetchCompleteParkingSpaces();
+      
     });
   }
 
@@ -387,7 +388,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
 
-      body: FutureBuilder<List<ParkingSpace>>(
+      body: FutureBuilder<List<CompleteParkingSpace>>(
         future: futureParkingSpaces,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
@@ -400,9 +401,19 @@ class _MyHomePageState extends State<MyHomePage> {
                     fontWeight: FontWeight.bold,
                     color: space.maintenanceAlert ? Colors.red : Colors.black,
                   );
-                return ListTile(
+                // return ListTile(
+                //   title: Text('Parking Space Number: ${space.id}', style: styleoftext),
+                //   subtitle: Text('Floor: ${space.floor}, Occupied: ${space.occupied}', style: styleoftext),
+                // );
+                return ExpansionTile(
                   title: Text('Parking Space Number: ${space.id}', style: styleoftext),
                   subtitle: Text('Floor: ${space.floor}, Occupied: ${space.occupied}', style: styleoftext),
+                  children: <Widget>[
+                    Text('Vehicle Status: ${space.vehicleStatus}', style: styleoftext),
+                    Text('Object in Spot: ${space.objectInSpot}', style: styleoftext),
+                    Text('Parking Space Obstructed: ${space.parkingSpaceObstructed}', style: styleoftext),
+                    Text('Maintenance Alert: ${space.maintenanceAlert}', style: styleoftext),
+                  ],
                 );
               },
             );

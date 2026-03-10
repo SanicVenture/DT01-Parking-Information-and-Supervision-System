@@ -12,7 +12,7 @@ namespace NewParkingAvailabilityServer
         public string connectionString = "Data Source=ParkingSpots.db";
         public string psfinalconnectionString = "Data Source=PSFinal.db";
         public string objectinspotconnectionString = "Data Source=ObjectInSpot.db";
-        public string opencvconnectionString = "Data Source=OpenCVResults.db";
+        public string openCVConnectionString = "Data Source=OpenCVResults.db";
         public string opencvpolygonsconnectionString = "Data Source=OpenCVPolygons.db";
 
         public void ChangeSpotFromFinalState(long id)
@@ -104,31 +104,31 @@ namespace NewParkingAvailabilityServer
 
             if (checkedItem is null)
             {
-                //try
-                //{
-                //    var http = new HttpClient();
-                //    var json = await http.GetStringAsync("http://10.18.28.240/");
+                try
+                {
+                    var http = new HttpClient();
+                    var json = await http.GetStringAsync("http://10.18.28.240/");
 
-                //    var doc = JsonDocument.Parse(json);
-                //    int occupied = doc.RootElement.GetProperty("occupied").GetInt32();
-                //    int error = doc.RootElement.GetProperty("error").GetInt32();
+                    var doc = JsonDocument.Parse(json);
+                    int occupied = doc.RootElement.GetProperty("occupied").GetInt32();
+                    int error = doc.RootElement.GetProperty("error").GetInt32();
 
-                //    checkedItem = new ObjectInSpotItem(
-                //        1, //hardcoded ID for now.
-                //        Convert.ToBoolean(occupied),
-                //        error
-                //    );
-
-
-                //}
-                //catch (Exception e)
-                //{
                     checkedItem = new ObjectInSpotItem(
-                        1, //hardcoded ID for now.
+                        id,
+                        Convert.ToBoolean(occupied),
+                        error
+                    );
+
+
+                }
+                catch (Exception e)
+                {
+                    checkedItem = new ObjectInSpotItem(
+                        id,
                         true,
                         0
                     );
-                //}
+                }
             }
 
 
@@ -136,7 +136,7 @@ namespace NewParkingAvailabilityServer
             if (checkedItem is not null)
             {
                 OpenCVResultsItem? openCVCorrespondingItem = null;
-                using (var conn = new SqliteConnection(opencvconnectionString))
+                using (var conn = new SqliteConnection(openCVConnectionString))
                 {
                     conn.Open();
                     var command = conn.CreateCommand();
@@ -191,9 +191,29 @@ namespace NewParkingAvailabilityServer
                     {
 
                     }
+
+                    try
+                    {
+                        using (var conn = new SqliteConnection(psfinalconnectionString))
+                        {
+                            conn.Open();
+                            var command = conn.CreateCommand();
+                            command.CommandText = $"UPDATE PSTotalResultsItems SET " +
+                                $"vehicle={currentItem.vehicle}, " +
+                                $"objectInSpot={currentItem.objectInSpot}, " +
+                                $"parkingSpaceObstructed={currentItem.parkingSpaceObstructed} " +
+                                $"WHERE id={currentItem.Id}";
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                    catch (SqliteException ex)
+                    {
+
+                    }
+
                 }
 
-            }
+                }
         }
 
         //called by the ObjectInSpotController
@@ -202,7 +222,7 @@ namespace NewParkingAvailabilityServer
             OpenCVResultsItem? checkedItem = null;
             try
             {
-                using (var conn = new SqliteConnection(opencvconnectionString))
+                using (var conn = new SqliteConnection(openCVConnectionString))
                 {
                     conn.Open();
                     var command = conn.CreateCommand();
@@ -256,7 +276,7 @@ namespace NewParkingAvailabilityServer
                     }
 
                     //deleting the other item so that we don't trigger an incorrect condition
-                    using (var conn = new SqliteConnection(opencvconnectionString))
+                    using (var conn = new SqliteConnection(openCVConnectionString))
                     {
                         conn.Open();
                         var command = conn.CreateCommand();
@@ -317,11 +337,11 @@ namespace NewParkingAvailabilityServer
             }
         }
 
-        public async Task createnewOpenCVResultsEntry(OpenCVResultsItem todoItem) //fix this so that it can check if an object exists already. Gotta have maximum safety.
+        public async Task CreateNewOpenCVResultsEntry(OpenCVResultsItem todoItem) //fix this so that it can check if an object exists already. Gotta have maximum safety.
         {
             try
             {
-                using (var conn = new SqliteConnection(opencvconnectionString))
+                using (var conn = new SqliteConnection(openCVConnectionString))
                 {
                     conn.Open();
                     var command = conn.CreateCommand();
