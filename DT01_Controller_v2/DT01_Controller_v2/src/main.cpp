@@ -107,8 +107,12 @@ void loop(void)
   int dist2 = calc_dist();
   HAL_Delay(100);
   int dist3 = calc_dist();
+  HAL_Delay(100);
+  int dist4 = calc_dist();
+  HAL_Delay(100);
+  int dist5 = calc_dist();
   // average the three measurements
-  dist = (dist1 + dist2 + dist3) / 3;
+  dist = (dist1 + dist2 + dist3 + dist4 + dist5) / 5;
   Serial.print("Distance: ");
   Serial.print(dist);
   Serial.println(" cm");
