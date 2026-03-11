@@ -211,9 +211,21 @@ namespace NewParkingAvailabilityServer
 
                     }
 
-                }
+                    try
+                    {
+                        var test = JsonConvert.SerializeObject(Convert.ToInt64(currentItem.convertedSpot.maintenanceAlert));
+                        var http = new HttpClient();
+                        var content = new StringContent(test, System.Text.Encoding.UTF8, "text/plain");
+                        var response = await http.PostAsync("http://10.18.28.240/error", content);
+                        string json = await response.Content.ReadAsStringAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                    }
 
                 }
+
+            }
         }
 
         //called by the ObjectInSpotController

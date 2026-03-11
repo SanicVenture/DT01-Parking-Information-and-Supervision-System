@@ -409,9 +409,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   title: Text('Parking Space Number: ${space.id}', style: styleoftext),
                   subtitle: Text('Floor: ${space.floor}, Occupied: ${space.occupied}', style: styleoftext),
                   children: <Widget>[
-                    Text('Vehicle Status: ${space.vehicleStatus}', style: styleoftext),
-                    Text('Object in Spot: ${space.objectInSpot}', style: styleoftext),
-                    Text('Parking Space Obstructed: ${space.parkingSpaceObstructed}', style: styleoftext),
+                    Text('Is the Object a Vehicle: ${space.vehicleStatus}', style: styleoftext),
+                    Text('Object in Spot According To Sensor: ${space.objectInSpot}', style: styleoftext),
+                    Text('Parking Space Obstructed According To Camera: ${space.parkingSpaceObstructed}', style: styleoftext),
                     Text('Maintenance Alert: ${space.maintenanceAlert}', style: styleoftext),
                   ],
                 );
