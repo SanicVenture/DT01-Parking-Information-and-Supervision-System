@@ -24,4 +24,9 @@
     <PackageReference Include="YoloSharp" Version="6.0.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="NewFolder\" />
+    <Folder Include="wwwroot\images\" />
+  </ItemGroup>
+
 </Project>

@@ -14,6 +14,7 @@ namespace NewParkingAvailabilityServer
         public string objectinspotconnectionString = "Data Source=ObjectInSpot.db";
         public string openCVConnectionString = "Data Source=OpenCVResults.db";
         public string opencvpolygonsconnectionString = "Data Source=OpenCVPolygons.db";
+        public bool microcontrollerON = false;
 
         public void ChangeSpotFromFinalState(long id)
         {
@@ -106,18 +107,30 @@ namespace NewParkingAvailabilityServer
             {
                 try
                 {
-                    var http = new HttpClient();
-                    var json = await http.GetStringAsync("http://10.18.28.240/");
+                    if (microcontrollerON)
+                    {
+                        var http = new HttpClient();
+                        var json = await http.GetStringAsync("http://10.18.28.240/");
 
-                    var doc = JsonDocument.Parse(json);
-                    int occupied = doc.RootElement.GetProperty("occupied").GetInt32();
-                    int error = doc.RootElement.GetProperty("error").GetInt32();
+                        var doc = JsonDocument.Parse(json);
+                        int occupied = doc.RootElement.GetProperty("occupied").GetInt32();
+                        int error = doc.RootElement.GetProperty("error").GetInt32();
+                        checkedItem = new ObjectInSpotItem(
+                            id,
+                            Convert.ToBoolean(occupied),
+                            error
+                        );
+                    }
+                    else
+                    {
+                        checkedItem = new ObjectInSpotItem(
+                            id, 
+                            true,
+                            0
+                        );
 
-                    checkedItem = new ObjectInSpotItem(
-                        id,
-                        Convert.ToBoolean(occupied),
-                        error
-                    );
+                    }
+
 
 
                 }
@@ -213,11 +226,14 @@ namespace NewParkingAvailabilityServer
 
                     try
                     {
-                        var test = JsonConvert.SerializeObject(Convert.ToInt64(currentItem.convertedSpot.maintenanceAlert));
-                        var http = new HttpClient();
-                        var content = new StringContent(test, System.Text.Encoding.UTF8, "text/plain");
-                        var response = await http.PostAsync("http://10.18.28.240/error", content);
-                        string json = await response.Content.ReadAsStringAsync();
+                        if (microcontrollerON)
+                        {
+                            var test = JsonConvert.SerializeObject(Convert.ToInt64(currentItem.convertedSpot.maintenanceAlert));
+                            var http = new HttpClient();
+                            var content = new StringContent(test, System.Text.Encoding.UTF8, "text/plain");
+                            var response = await http.PostAsync("http://10.18.28.240/error", content);
+                            string json = await response.Content.ReadAsStringAsync();
+                        }
                     }
                     catch (Exception ex)
                     {

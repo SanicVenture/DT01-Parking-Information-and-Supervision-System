@@ -30,6 +30,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.UseStaticFiles();
+
 OpenCVManager openCVManager = new OpenCVManager();
 openCVManager.StartImageRecognition();
 

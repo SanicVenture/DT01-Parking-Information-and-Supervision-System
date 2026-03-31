@@ -27,9 +27,9 @@ namespace NewParkingAvailabilityServer
     {
         private SQLManager sqlManager = new SQLManager();
         private string streamURL = "rtsp://admin:Password@10.18.31.38:554";
-        private int msTimeout = 12000;
-        private int[] spotIds = [1]; //example parking spot IDs
-        private bool showDetections = true;
+        private int msTimeout = 13000;
+        private int[] spotIds = [1, 2]; //example parking spot IDs
+        private bool showDetections = false;
 
         //This string array of acceptable vehicles is just an example of what the
         //OpenCV implementation will look for.
@@ -120,210 +120,221 @@ namespace NewParkingAvailabilityServer
             string outputPath = $"output_frame_{Id}.bmp";
             while (true)
             {
-                using (var capture = new VideoCapture(streamURL))
-                //using (var capture = new VideoCapture())
+                using Mutex mut = new Mutex(false, "SQLManagerMutex");
+                if (mut.WaitOne())
                 {
-                    if (!capture.IsOpened())
+                    using (var capture = new VideoCapture(streamURL))
+                    //using (var capture = new VideoCapture())
                     {
-                        Console.WriteLine("ERROR: could not open camera stream.");
-                        await sqlManager.CheckForMicrocontrollerData(Id);
-                        Thread.Sleep(msTimeout);
-                        //need to add a proper camera error state.
-                        continue;
-                    } 
-
-                    using (var frame = new Mat())
-                    //using (Mat frame = Cv2.ImRead("input_frame.jpg"))
-                    //using (Mat frame = Cv2.ImRead("input_frame_with_cones.png"))
-                    {
-
-                        capture.Read(frame);
-
-                        if (frame.Empty())
+                        if (!capture.IsOpened())
                         {
+                            Console.WriteLine("ERROR: could not open camera stream.");
+                            await sqlManager.CheckForMicrocontrollerData(Id);
+                            mut.ReleaseMutex();
                             Thread.Sleep(msTimeout);
-                            continue; //skip the rest of the loop and come back to checking the capture.
-                        }
-                        else
-                        {
-                            //image saving test
-                            // 3. Save the Mat object to a BMP file using Cv2.ImWrite
-                            Cv2.ImWrite(outputPath, frame);
-
-                            Console.WriteLine($"Frame successfully saved to {outputPath}");
+                            //need to add a proper camera error state.
+                            continue;
                         }
 
-
-                        using (var frameClone = frame.Clone())
+                        using (var frame = new Mat())
+                        //using (Mat frame = Cv2.ImRead("input_frame.jpg"))
+                        //using (Mat frame = Cv2.ImRead("input_frame_with_cones.png"))
                         {
-                            Cv2.PyrDown(frameClone, frameClone);
 
-                            //Cv2.CvtColor(frame, dest, ColorConversionCodes.BGR2GRAY);
+                            capture.Read(frame);
+                            capture.Dispose();
+                            mut.ReleaseMutex();
 
-                            //Cv2.ImShow("Grayscale Image", dest);
-                            //Cv2.WaitKey(0);
-
-                            //START OF LOOP
-
-                            OpenCvSharp.Point[][]? polygon = sqlManager.OpenPolygonEntry(Id);
-
-
-                            //if no points saved...
-                            if (polygon == null)
+                            if (frame.Empty())
                             {
+                                Thread.Sleep(msTimeout);
+                                continue; //skip the rest of the loop and come back to checking the capture.
+                            }
+                            else
+                            {
+                                //image saving test
+                                // 3. Save the Mat object to a BMP file using Cv2.ImWrite
+                                Cv2.ImWrite(outputPath, frame);
 
-                                //figure out how to force only 4 points.
-                                List<OpenCvSharp.Point> points = new List<OpenCvSharp.Point>();
-
-                                Cv2.NamedWindow("Select ROI");
-                                Cv2.ResizeWindow("Select ROI", frameClone.Size());
-                                Cv2.SetMouseCallback("Select ROI", (MouseEventTypes @event, int x, int y, MouseEventFlags flags, IntPtr userData) =>
-                                {
-                                    if (@event == MouseEventTypes.LButtonDown)
-                                    {
-                                        points.Add(new OpenCvSharp.Point(x, y));
-                                        Cv2.Circle(frameClone, new OpenCvSharp.Point(x, y), 3, Scalar.Red, -1);
-                                        Cv2.ImShow("Select ROI", frameClone);
-                                    }
-                                });
-
-                                Cv2.ImShow("Select ROI", frameClone);
-                                Cv2.WaitKey(0);
-
-                                Mat mask = new Mat(frameClone.Size(), MatType.CV_8UC1, Scalar.All(0));
-
-                                if (points.Count > 2)
-                                {
-                                    polygon = [points.ToArray()];
-
-                                    Cv2.FillPoly(mask, polygon, Scalar.All(255)); //fill polygon with white
-
-                                    //Need to scale the points back up to the original frame size before saving
-                                    //to the database, since the user is selecting points on a downscaled version of the frame.
-                                    for (int i = 0; i < polygon[0].Length; i++)
-                                    {
-                                        polygon[0][i].X *= 2;
-                                        polygon[0][i].Y *= 2;
-                                    }
-
-                                    await sqlManager.createNewPolygonEntry(polygon, Id);
-                                }
-
-                                Mat dst = new Mat();
-                                Cv2.BitwiseAnd(frameClone, frameClone, dst, mask);
-
-                                Cv2.ImShow("ROI", dst);
-                                Cv2.WaitKey(0);
+                                Console.WriteLine($"Frame successfully saved to {outputPath}");
                             }
 
 
-                            //Cv2.ImWrite("masked_output.png", dst); //should we be using masked output for detection?
-                            using var predictor = new YoloPredictor("yolov8s.onnx");
-
-                            YoloResult<Detection> result = await predictor.DetectAsync(outputPath);
-
-                            Image<Rgba32> image = SixLabors.ImageSharp.Image.Load<Rgba32>(outputPath);
-
-                            OpenCVResultsItem openCVresult = new OpenCVResultsItem(Id, false, false);
-
-                            foreach (Detection detection in result)
+                            using (var frameClone = frame.Clone())
                             {
-                                var rectangle = new SixLabors.ImageSharp.RectangleF(
-                                    detection.Bounds.X,
-                                    detection.Bounds.Y,
-                                    detection.Bounds.Width,
-                                    detection.Bounds.Height);
-                                image.Mutate(ctx =>
-                                {
-                                    ctx.Draw(Rgba32.ParseHex("FF0000"), 2, rectangle);
-                                    ctx.DrawText(
-                                        detection.Name.Name,
-                                        SystemFonts.CreateFont("Arial", 32),
-                                        Rgba32.ParseHex("FF0000"),
-                                        new SixLabors.ImageSharp.PointF(detection.Bounds.X, detection.Bounds.Y + 20));
-                                });
+                                Cv2.PyrDown(frameClone, frameClone);
 
-                                bool[] objectInParkingSpace = RectangleChecker(detection, polygon);
-                                //first boolean is is object in spot, second boolean is if the boolean is properly in the spot. 
+                                //Cv2.CvtColor(frame, dest, ColorConversionCodes.BGR2GRAY);
 
-                                if (objectInParkingSpace[0] && !objectInParkingSpace[1])
+                                //Cv2.ImShow("Grayscale Image", dest);
+                                //Cv2.WaitKey(0);
+
+                                //START OF LOOP
+
+                                OpenCvSharp.Point[][]? polygon = sqlManager.OpenPolygonEntry(Id);
+
+
+                                //if no points saved...
+                                if (polygon == null)
                                 {
-                                    openCVresult = new OpenCVResultsItem(Id, false, true);
-                                }
-                                else if (objectInParkingSpace[0] && objectInParkingSpace[1])
-                                {
-                                    if (acceptableVehicles.Contains(detection.Name.Name))
+
+                                    //figure out how to force only 4 points.
+                                    List<OpenCvSharp.Point> points = new List<OpenCvSharp.Point>();
+
+                                    Cv2.NamedWindow("Select ROI");
+                                    Cv2.ResizeWindow("Select ROI", frameClone.Size());
+                                    Cv2.SetMouseCallback("Select ROI", (MouseEventTypes @event, int x, int y, MouseEventFlags flags, IntPtr userData) =>
                                     {
-                                        openCVresult = new OpenCVResultsItem(Id, true, true);
-                                        break;
+                                        if (@event == MouseEventTypes.LButtonDown)
+                                        {
+                                            points.Add(new OpenCvSharp.Point(x, y));
+                                            Cv2.Circle(frameClone, new OpenCvSharp.Point(x, y), 3, Scalar.Red, -1);
+                                            Cv2.ImShow("Select ROI", frameClone);
+                                        }
+                                    });
+
+                                    Cv2.ImShow("Select ROI", frameClone);
+                                    Cv2.WaitKey(0);
+
+                                    Mat mask = new Mat(frameClone.Size(), MatType.CV_8UC1, Scalar.All(0));
+
+                                    if (points.Count > 2)
+                                    {
+                                        polygon = [points.ToArray()];
+
+                                        Cv2.FillPoly(mask, polygon, Scalar.All(255)); //fill polygon with white
+
+                                        //Need to scale the points back up to the original frame size before saving
+                                        //to the database, since the user is selecting points on a downscaled version of the frame.
+                                        for (int i = 0; i < polygon[0].Length; i++)
+                                        {
+                                            polygon[0][i].X *= 2;
+                                            polygon[0][i].Y *= 2;
+                                        }
+
+                                        await sqlManager.createNewPolygonEntry(polygon, Id);
                                     }
-                                    else
+
+                                    Mat dst = new Mat();
+                                    Cv2.BitwiseAnd(frameClone, frameClone, dst, mask);
+
+                                    Cv2.ImShow("ROI", dst);
+                                    Cv2.WaitKey(0);
+                                }
+
+
+                                //Cv2.ImWrite("masked_output.png", dst); //should we be using masked output for detection?
+                                using var predictor = new YoloPredictor("yolov8s.onnx");
+
+                                YoloResult<Detection> result = await predictor.DetectAsync(outputPath);
+
+                                Image<Rgba32> image = SixLabors.ImageSharp.Image.Load<Rgba32>(outputPath);
+
+                                OpenCVResultsItem openCVresult = new OpenCVResultsItem(Id, false, false);
+
+                                foreach (Detection detection in result)
+                                {
+                                    var rectangle = new SixLabors.ImageSharp.RectangleF(
+                                        detection.Bounds.X,
+                                        detection.Bounds.Y,
+                                        detection.Bounds.Width,
+                                        detection.Bounds.Height);
+                                    image.Mutate(ctx =>
+                                    {
+                                        ctx.Draw(Rgba32.ParseHex("FF0000"), 2, rectangle);
+                                        ctx.DrawText(
+                                            detection.Name.Name,
+                                            SystemFonts.CreateFont("Arial", 32),
+                                            Rgba32.ParseHex("FF0000"),
+                                            new SixLabors.ImageSharp.PointF(detection.Bounds.X, detection.Bounds.Y + 20));
+                                    });
+
+                                    bool[] objectInParkingSpace = RectangleChecker(detection, polygon);
+                                    //first boolean is is object in spot, second boolean is if the boolean is properly in the spot. 
+
+                                    if (objectInParkingSpace[0] && !objectInParkingSpace[1])
                                     {
                                         openCVresult = new OpenCVResultsItem(Id, false, true);
                                     }
+                                    else if (objectInParkingSpace[0] && objectInParkingSpace[1])
+                                    {
+                                        if (acceptableVehicles.Contains(detection.Name.Name))
+                                        {
+                                            openCVresult = new OpenCVResultsItem(Id, true, true);
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            openCVresult = new OpenCVResultsItem(Id, false, true);
+                                        }
+                                    }
+
+                                    //if those don't pass, here will be where the more classical detection of objects could be thrown in. 
+
                                 }
 
-                                //if those don't pass, here will be where the more classical detection of objects could be thrown in. 
+                                await sqlManager.CreateNewOpenCVResultsEntry(openCVresult);
+                                await sqlManager.CheckForMicrocontrollerData(Id);
 
-                            }
-
-                            await sqlManager.CreateNewOpenCVResultsEntry(openCVresult);
-                            await sqlManager.CheckForMicrocontrollerData(Id);
-
-                            var pen = Pens.Solid(SixLabors.ImageSharp.Color.Blue, 3f);
+                                var pen = Pens.Solid(SixLabors.ImageSharp.Color.Blue, 3f);
 
 
-                            //convert opencv points to sixlabors points
-                            SixLabors.ImageSharp.PointF[] polygonSixLabors = new SixLabors.ImageSharp.PointF[]
-                            {
+                                //convert opencv points to sixlabors points
+                                SixLabors.ImageSharp.PointF[] polygonSixLabors = new SixLabors.ImageSharp.PointF[]
+                                {
                                 new SixLabors.ImageSharp.PointF(polygon[0][0].X, polygon[0][0].Y),
                                 new SixLabors.ImageSharp.PointF(polygon[0][1].X, polygon[0][1].Y),
                                 new SixLabors.ImageSharp.PointF(polygon[0][2].X, polygon[0][2].Y),
                                 new SixLabors.ImageSharp.PointF(polygon[0][3].X, polygon[0][3].Y)
-                            };
+                                };
 
-                            image.Mutate(ctx =>
-                            {
-                                ctx.DrawPolygon(pen, polygonSixLabors);
-                            });
+                                image.Mutate(ctx =>
+                                {
+                                    ctx.DrawPolygon(pen, polygonSixLabors);
+                                });
 
-
-                            image.SaveAsPng($"output_frame_with_detections_{Id}.png");
-
-                            if (showDetections == true)
-                            {
-
-                                Mat final = Cv2.ImRead($"output_frame_with_detections_{Id}.png");
-                                Cv2.PyrDown(final, final);
-
-                                Cv2.ImShow("YOLO Detections", final);
-                                Cv2.WaitKey(0);
-                            }
-
-                            else
-                            {
-                                //Thread.Sleep(msTimeout);
-                            }
+                                try
+                                {
+                                    image.SaveAsPng($"wwwroot/images/output_frame_with_detections_{Id}.png");
+                                }
+                                catch (Exception ex)
+                                {
+                                }
 
 
-                            //Mat greydst = new Mat();
+                                if (showDetections == true)
+                                {
+                                    Mat final = Cv2.ImRead($"wwwroot/images/output_frame_with_detections_{Id}.png");
+                                    Cv2.PyrDown(final, final);
 
-                            //Cv2.CvtColor(dst.Clone(), greydst, ColorConversionCodes.BGR2GRAY);
+                                    Cv2.ImShow("YOLO Detections", final);
+                                    Cv2.WaitKey(0);
+                                }
 
-                            //Cv2.ImShow("Grayscale Image", greydst);
-                            //Cv2.WaitKey(0);
+                                else
+                                {
+                                    Thread.Sleep(msTimeout);
+                                }
 
-                            //int pixels = Cv2.CountNonZero(greydst);
 
-                            //using (var cannyed_image = new Mat())
-                            //{
-                            //    Cv2.Canny(dst, cannyed_image, 100, 200);
+                                //Mat greydst = new Mat();
 
-                            //    Cv2.ImShow("Cannyed Image", cannyed_image);
-                            //    Cv2.WaitKey(0);
+                                //Cv2.CvtColor(dst.Clone(), greydst, ColorConversionCodes.BGR2GRAY);
 
-                            //    int cannypixels = Cv2.CountNonZero(cannyed_image);
-                            //}
+                                //Cv2.ImShow("Grayscale Image", greydst);
+                                //Cv2.WaitKey(0);
+
+                                //int pixels = Cv2.CountNonZero(greydst);
+
+                                //using (var cannyed_image = new Mat())
+                                //{
+                                //    Cv2.Canny(dst, cannyed_image, 100, 200);
+
+                                //    Cv2.ImShow("Cannyed Image", cannyed_image);
+                                //    Cv2.WaitKey(0);
+
+                                //    int cannypixels = Cv2.CountNonZero(cannyed_image);
+                                //}
 
                                 //END OF LOOP
 
@@ -417,8 +428,11 @@ namespace NewParkingAvailabilityServer
                                 #endregion
 
                             }
+                        }
                     }
                 }
+
+                
             }
         }
     }

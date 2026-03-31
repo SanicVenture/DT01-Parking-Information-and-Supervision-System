@@ -302,7 +302,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     // futureParkingSpace = fetchParkingSpace();
     futureParkingSpaces = fetchCompleteParkingSpaces();
-    _timer = Timer.periodic(const Duration(seconds: 5), (Timer t) {
+    _timer = Timer.periodic(const Duration(seconds: 10), (Timer t) {
       setState(() {
         futureParkingSpaces = fetchCompleteParkingSpaces();
       });
@@ -320,7 +320,6 @@ class _MyHomePageState extends State<MyHomePage> {
     await createNewParkingSpace();
     setState(() {
       futureParkingSpaces = fetchCompleteParkingSpaces();
-      
     });
   }
 
@@ -405,6 +404,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 //   title: Text('Parking Space Number: ${space.id}', style: styleoftext),
                 //   subtitle: Text('Floor: ${space.floor}, Occupied: ${space.occupied}', style: styleoftext),
                 // );
+                final imageURL = '${isAndroid ? staticRemoteUrl : staticLocalUrl}/images/output_frame_with_detections_${space.id}.png';
+                final provider = NetworkImage(imageURL);
+                provider.evict();
+                var imageKey = ValueKey(DateTime.now().toString());
                 return ExpansionTile(
                   title: Text('Parking Space Number: ${space.id}', style: styleoftext),
                   subtitle: Text('Floor: ${space.floor}, Occupied: ${space.occupied}', style: styleoftext),
@@ -412,7 +415,15 @@ class _MyHomePageState extends State<MyHomePage> {
                     Text('Is the Object a Vehicle: ${space.vehicleStatus}', style: styleoftext),
                     Text('Object in Spot According To Sensor: ${space.objectInSpot}', style: styleoftext),
                     Text('Parking Space Obstructed According To Camera: ${space.parkingSpaceObstructed}', style: styleoftext),
-                    Text('Maintenance Alert: ${space.maintenanceAlert}', style: styleoftext),
+                    Text('YOLO Detections:', style: styleoftext),
+                    Image(
+                      image: provider,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Text('Error loading YOLO image');
+                      },
+                      height:400,
+                      key: imageKey
+                    ),
                   ],
                 );
               },
