@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
-          colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+          colorScheme: .fromSeed(seedColor: const Color.fromARGB(255, 255, 255, 255), brightness: Brightness.dark),
         ),
         home: MyHomePage(title: 'Parking Lot Entrance Information'),
       )
@@ -50,6 +50,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   Timer? _timer;
   late Future<List<ParkingSpace>> futureParkingSpaces;
+  var oldSpaces;
+  bool failure = false;
+
 
   @override
   void initState() {
@@ -58,6 +61,16 @@ class _MyHomePageState extends State<MyHomePage> {
     _timer = Timer.periodic(const Duration(seconds: 10), (Timer t) {
       setState(() {
         futureParkingSpaces = fetchParkingSpaces();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (failure && !isDesktop) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Error fetching data, showing last successful data'),
+                duration: Duration(seconds: 8),
+              ),
+            );
+          }
+        });
       });
     });
   }
@@ -77,16 +90,19 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      // backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      appBar: !isDesktop ? AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
-      ),
+      ) : null,
 
       body: FutureBuilder<List<ParkingSpace>>(
         future: futureParkingSpaces,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
+            failure = false;
             final parkingSpaces = snapshot.data!;
+            oldSpaces = parkingSpaces;
             final List<List<ParkingSpace>> ByFloorList = [];
             final List<int> AvailablePerFloor = [];
             int maxFloor = 0;
@@ -123,7 +139,50 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             );
           } else if (snapshot.hasError) {
-            return Center(child: Text('${snapshot.error}'));
+            if (oldSpaces != null)
+            {
+              failure = true;
+              final List<List<ParkingSpace>> ByFloorList = [];
+              final List<int> AvailablePerFloor = [];
+              int maxFloor = 0;
+              for (var space in oldSpaces) {
+                if (space.floor > maxFloor) {
+                  maxFloor = space.floor;
+                }
+              }
+
+              for (var i = 1; i <= maxFloor; i++) {
+                ByFloorList.add(oldSpaces.where((space) => space.floor == i).toList());
+              }
+
+              for (var floor in ByFloorList) {
+                final availableCount = floor.where((space) => !space.occupied).length;
+                AvailablePerFloor.add(availableCount);
+              }
+
+              return ListView.builder(
+                itemCount: ByFloorList.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return ListTile(
+                      title: Text('Open Spots: ${AvailablePerFloor.reduce((a, b) => a + b)}'),
+                    );
+                  }
+                  return ListTile(
+                    title: Text('Floor: ${index}'),
+                    subtitle: 
+                    Text(
+                      'Open Spots: ${AvailablePerFloor[index - 1]}'
+                      ),
+                  );
+                },
+              );              
+            }
+            else
+            {
+              return Center(child: Text('${snapshot.error}'));
+            }
+
           }
 
           // By default, show a loading spinner.
@@ -131,11 +190,11 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
 
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: !isDesktop ? FloatingActionButton(
         onPressed: _updateParkingSpots,
         tooltip: 'Reload',
         child: const Icon(Icons.replay),
-      ),
+      ) : null,
     );
   }
 }

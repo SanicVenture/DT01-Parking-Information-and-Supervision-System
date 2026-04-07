@@ -23,7 +23,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       home: MyHomePage(title: 'Maintenance Application'),
@@ -53,6 +52,61 @@ class _SecondRouteState extends State<SecondRoute> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Parking Spot Simulation'),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Maintenance Application',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const MyHomePage(title: 'Home')),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Subsystem Demo Menu'),
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => SecondRoute()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Simulate Microcontroller Output'),
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => ObjectInSpotRoute()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Simulate OpenCV Output'),
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => OpenCVResultRoute()),
+                );
+              },
+            ),
+          ],
+        ),
       ),
       body: Center(
         child: Column(
@@ -153,6 +207,61 @@ class _ObjectInSpotRouteState extends State<ObjectInSpotRoute> {
       appBar: AppBar(
         title: const Text('Parking Spot Simulation'),
       ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Maintenance Application',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const MyHomePage(title: 'Home')),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Subsystem Demo Menu'),
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => SecondRoute()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Simulate Microcontroller Output'),
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => ObjectInSpotRoute()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Simulate OpenCV Output'),
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => OpenCVResultRoute()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -220,6 +329,61 @@ class _OpenCVResultRouteState extends State<OpenCVResultRoute> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Parking Spot Simulation'),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Maintenance Application',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const MyHomePage(title: 'Home')),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Subsystem Demo Menu'),
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => SecondRoute()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Simulate Microcontroller Output'),
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => ObjectInSpotRoute()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Simulate OpenCV Output'),
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => OpenCVResultRoute()),
+                );
+              },
+            ),
+          ],
+        ),
       ),
       body: Center(
         child: Column(
@@ -295,31 +459,30 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   // late Future<ParkingSpace> futureParkingSpace;
   late Future<List<CompleteParkingSpace>> futureParkingSpaces;
-  late Future<List<CompleteParkingSpace>> previousParkingSpaces;
+  var oldSpaces;
+  bool failure = false;
   Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    // futureParkingSpace = fetchParkingSpace();
     futureParkingSpaces = fetchCompleteParkingSpaces();
-    previousParkingSpaces = futureParkingSpaces;
 
     _timer = Timer.periodic(const Duration(seconds: 10), (Timer t) {
       setState(() {
-        try {
-          futureParkingSpaces = fetchCompleteParkingSpaces();     
-          previousParkingSpaces = futureParkingSpaces;     
-        }
-        catch (exception)
-        {
-          futureParkingSpaces = previousParkingSpaces;
-        }
-
-
-      });
+        futureParkingSpaces = fetchCompleteParkingSpaces();     
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (failure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Error fetching data, showing last successful data'),
+                duration: Duration(seconds: 8),
+              ),
+            );
+          }
+        });
+      });    
     });
-
   }
 
   @override
@@ -403,7 +566,9 @@ class _MyHomePageState extends State<MyHomePage> {
         future: futureParkingSpaces,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
+            failure = false;
             final parkingSpaces = snapshot.data!;
+            oldSpaces = parkingSpaces;
             return ListView.builder(
               itemCount: parkingSpaces.length,
               itemBuilder: (context, index) {
@@ -441,7 +606,49 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             );
           } else if (snapshot.hasError) {
-            return Center(child: Text('${snapshot.error}'));
+            if (oldSpaces != null) {
+            failure = true;
+            return ListView.builder(
+              itemCount: oldSpaces!.length,
+              itemBuilder: (context, index) {
+                final space = oldSpaces![index];
+                final styleoftext = TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: space.maintenanceAlert ? Colors.red : Colors.black,
+                  );
+                // return ListTile(
+                //   title: Text('Parking Space Number: ${space.id}', style: styleoftext),
+                //   subtitle: Text('Floor: ${space.floor}, Occupied: ${space.occupied}', style: styleoftext),
+                // );
+                final imageURL = '${isAndroid ? staticRemoteUrl : staticLocalUrl}/images/output_frame_with_detections_${space.id}.png';
+                final provider = NetworkImage(imageURL);
+                provider.evict();
+                var imageKey = ValueKey(DateTime.now().toString());
+                return ExpansionTile(
+                  title: Text('Parking Space Number: ${space.id}', style: styleoftext),
+                  subtitle: Text('Floor: ${space.floor}, Occupied: ${space.occupied}', style: styleoftext),
+                  children: <Widget>[
+                    Text('Is the Object a Vehicle: ${space.vehicleStatus}', style: styleoftext),
+                    Text('Object in Spot According To Sensor: ${space.objectInSpot}', style: styleoftext),
+                    Text('Parking Space Obstructed According To Camera: ${space.parkingSpaceObstructed}', style: styleoftext),
+                    Text('YOLO Detections:', style: styleoftext),
+                    Image(
+                      image: provider,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Text('Error loading YOLO image');
+                      },
+                      height:400,
+                      key: imageKey
+                    ),
+                  ],
+                );
+              },
+            );
+            }
+            else{
+              return Center(child: Text('${snapshot.error}'));
+            }
+
           }
           return const Center(child: CircularProgressIndicator());
         },

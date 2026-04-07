@@ -28,7 +28,7 @@ namespace NewParkingAvailabilityServer
         private SQLManager sqlManager = new SQLManager();
         private string streamURL = "rtsp://admin:Password@10.18.31.38:554";
         private int msTimeout = 13000;
-        private int[] spotIds = [1, 2]; //example parking spot IDs
+        private int[] spotIds = [1]; //example parking spot IDs
         private bool showDetections = false;
 
         //This string array of acceptable vehicles is just an example of what the
@@ -57,11 +57,17 @@ namespace NewParkingAvailabilityServer
         {
             int[] ints = new int[polygon.Length];
             int furthestLeftPoint = polygon[0][0].X;
+            int furthestRightPoint = polygon[0][0].X;
             foreach (OpenCvSharp.Point point in polygon[0])
             {
                 if (point.X < furthestLeftPoint)
                 {
                     furthestLeftPoint = point.X;
+                }
+
+                if (point.X > furthestRightPoint)
+                {
+                    furthestRightPoint = point.X;
                 }
             }
 
@@ -71,7 +77,7 @@ namespace NewParkingAvailabilityServer
             int bottomY = detection.Bounds.Y + detection.Bounds.Height;
 
             //first we check if the detection rectangle could intersect or be within with the parking spot polygon. If it not, then we can return false immediately.
-            if (!((leftX < furthestLeftPoint) && (rightX < furthestLeftPoint)))
+            if (!((leftX < furthestLeftPoint) && (rightX < furthestLeftPoint)) && !((rightX > furthestRightPoint) && (leftX > furthestRightPoint)))
             {
                 //converting the detection rectangle to Clipper Points and Paths.
                 Path64 detectionPath = new Path64([
@@ -111,6 +117,10 @@ namespace NewParkingAvailabilityServer
                 //first boolean weeds out overlaps that are basically negligible, the second boolean tells proper overlaps.
                 return [decimalOverlap >= 0.1, decimalOverlap >= 0.5];
             }
+            else
+            {
+
+            }
 
             return [false, false]; //placeholder return value
         }
@@ -138,6 +148,7 @@ namespace NewParkingAvailabilityServer
 
                         using (var frame = new Mat())
                         //using (Mat frame = Cv2.ImRead("input_frame.jpg"))
+                        //using (Mat frame = Cv2.ImRead("660133120_2111104549684688_1260124105542542725_n.jpg"))
                         //using (Mat frame = Cv2.ImRead("input_frame_with_cones.png"))
                         {
 
@@ -198,7 +209,7 @@ namespace NewParkingAvailabilityServer
 
                                     Mat mask = new Mat(frameClone.Size(), MatType.CV_8UC1, Scalar.All(0));
 
-                                    if (points.Count > 2)
+                                    if (points.Count == 4)
                                     {
                                         polygon = [points.ToArray()];
 

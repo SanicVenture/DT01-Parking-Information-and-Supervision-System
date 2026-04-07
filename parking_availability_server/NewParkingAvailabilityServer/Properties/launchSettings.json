@@ -25,9 +25,9 @@
       //hotspot on UA campus
       //"applicationUrl": "https://10.217.52.241:3124;https://localhost:7288;http://localhost:5287",
       //TPLink on UA campus
-      "applicationUrl": "https://10.18.31.4:3124;https://localhost:7288",
+      //"applicationUrl": "https://10.18.31.4:3124;https://localhost:7288",
       //UA campus no hotspot
-      //"applicationUrl": "https://10.175.30.81;https://localhost:7288;http://localhost:5287",
+      "applicationUrl": "https://10.175.27.122;https://localhost:7288",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
