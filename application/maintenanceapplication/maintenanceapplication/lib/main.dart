@@ -295,6 +295,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   // late Future<ParkingSpace> futureParkingSpace;
   late Future<List<CompleteParkingSpace>> futureParkingSpaces;
+  late Future<List<CompleteParkingSpace>> previousParkingSpaces;
   Timer? _timer;
 
   @override
@@ -302,9 +303,20 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     // futureParkingSpace = fetchParkingSpace();
     futureParkingSpaces = fetchCompleteParkingSpaces();
+    previousParkingSpaces = futureParkingSpaces;
+
     _timer = Timer.periodic(const Duration(seconds: 10), (Timer t) {
       setState(() {
-        futureParkingSpaces = fetchCompleteParkingSpaces();
+        try {
+          futureParkingSpaces = fetchCompleteParkingSpaces();     
+          previousParkingSpaces = futureParkingSpaces;     
+        }
+        catch (exception)
+        {
+          futureParkingSpaces = previousParkingSpaces;
+        }
+
+
       });
     });
 
