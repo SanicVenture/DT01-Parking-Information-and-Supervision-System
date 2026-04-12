@@ -28,12 +28,12 @@ namespace NewParkingAvailabilityServer
         private SQLManager sqlManager = new SQLManager();
         private string streamURL = "rtsp://admin:Password@10.18.31.38:554";
         private int msTimeout = 13000;
-        private int[] spotIds = [1]; //example parking spot IDs
+        private int[] spotIds = [1, 2, 3]; //example parking spot IDs
         private bool showDetections = false;
 
         //This string array of acceptable vehicles is just an example of what the
         //OpenCV implementation will look for.
-        private string[] acceptableVehicles = ["car", "motorcycle", "van", "truck", "bus"];
+        private string[] acceptableVehicles = ["car", "motorcycle", "van", "truck", "bus", "bicycle"];
 
         public async void StartImageRecognition()
         {
