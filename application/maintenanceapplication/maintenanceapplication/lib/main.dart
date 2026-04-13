@@ -445,6 +445,50 @@ class _OpenCVResultRouteState extends State<OpenCVResultRoute> {
   }
 }
 
+class IPRoute extends StatefulWidget {
+  IPRoute({super.key});
+  
+  @override
+  State<StatefulWidget> createState() => _IPRouteState();
+}
+
+class _IPRouteState extends State<IPRoute> {
+  String selectedvalue4 = staticRemoteUrl;
+
+
+  final TextEditingController _controller = TextEditingController(text: staticRemoteUrl);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Select Parking Space Id:'),
+            TextField(
+              controller: _controller,
+              keyboardType: TextInputType.text,
+              onChanged: (value) {
+                setState(() {
+                  selectedvalue4 = value;
+                });
+              },
+            ),
+            ElevatedButton(
+              onPressed: () {
+                staticRemoteUrl = selectedvalue4;
+                Navigator.pop(context);
+              },
+              child: const Text('Set IP Address'),
+            ),
+          ],
+        )
+      ),
+    );
+  }
+}
+
 //home page code
 
 class MyHomePage extends StatefulWidget {
@@ -456,11 +500,14 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+
+bool shownOnce = false;
 class _MyHomePageState extends State<MyHomePage> {
   // late Future<ParkingSpace> futureParkingSpace;
   late Future<List<CompleteParkingSpace>> futureParkingSpaces;
   var oldSpaces;
   bool failure = false;
+
   Timer? _timer;
 
   @override
@@ -483,7 +530,20 @@ class _MyHomePageState extends State<MyHomePage> {
         });
       });    
     });
+
+
+    if (!isDesktop && !shownOnce)
+    {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.push(context,
+          MaterialPageRoute(builder: (context) => IPRoute()),
+        );    
+        shownOnce = true;
+      });
+    }
   }
+
+
 
   @override
   void dispose() {
