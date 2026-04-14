@@ -18,7 +18,7 @@ The device exposes a JSON status response at the root path:
 ### Example (curl)
 
 ```bash
-curl http://10.18.28.240/
+curl http://192.168.0.120/
 ```
 
 Expected response:
@@ -44,13 +44,13 @@ The device accepts a POST request to set the error state:
 ### Example (set error)
 
 ```bash
-curl -X POST http://10.18.28.240/error -d "1"
+curl -X POST http://192.168.0.120/error -d "1"
 ```
 
 ### Example (clear error)
 
 ```bash
-curl -X POST http://10.18.28.240/error -d "0"
+curl -X POST http://192.168.0.120/error -d "0"
 ```
 
 The device replies with the current JSON state after each request.
@@ -72,7 +72,7 @@ using System.Net.Http;
 using System.Text.Json;
 
 var http = new HttpClient();
-var json = await http.GetStringAsync("http://10.18.28.240/");
+var json = await http.GetStringAsync("http://192.168.0.120/");
 
 // Parse JSON
 var doc = JsonDocument.Parse(json);
@@ -88,7 +88,7 @@ using System.Text;
 
 var http = new HttpClient();
 var content = new StringContent("1", Encoding.UTF8, "text/plain");
-var response = await http.PostAsync("http://10.18.28.240/error", content);
+var response = await http.PostAsync("http://192.168.0.120/error", content);
 string json = await response.Content.ReadAsStringAsync();
 ```
 
@@ -105,7 +105,7 @@ var http = new HttpClient();
 
 while (true)
 {
-    var json = await http.GetStringAsync("http://10.18.28.240/");
+    var json = await http.GetStringAsync("http://192.168.0.120/");
     var doc = JsonDocument.Parse(json);
 
     int occupied = doc.RootElement.GetProperty("occupied").GetInt32();
