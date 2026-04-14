@@ -45,7 +45,7 @@ const uint8_t echo = PC0; // PC0
 
 // Ethernet configuration
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
-IPAddress ip(10, 18, 28, 240);
+IPAddress ip(192, 168, 0, 120);
 EthernetServer server(80);
 const uint8_t w5500_cs = PB6; // CS for W5500 (wire this pin to W5500 CS)
 
