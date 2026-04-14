@@ -14,7 +14,9 @@ namespace NewParkingAvailabilityServer
         public string objectinspotconnectionString = "Data Source=ObjectInSpot.db";
         public string openCVConnectionString = "Data Source=OpenCVResults.db";
         public string opencvpolygonsconnectionString = "Data Source=OpenCVPolygons.db";
-        public bool microcontrollerON = false;
+        public bool microcontrollerON = true;
+        public string microcontrollerIP = "http://192.168.0.120/";
+        //public string microcontrollerIP = "http://10.18.28.240/";
 
         public void ChangeSpotFromFinalState(long id)
         {
@@ -110,7 +112,7 @@ namespace NewParkingAvailabilityServer
                     if (microcontrollerON)
                     {
                         var http = new HttpClient();
-                        var json = await http.GetStringAsync("http://10.18.28.240/");
+                        var json = await http.GetStringAsync(microcontrollerIP);
 
                         var doc = JsonDocument.Parse(json);
                         int occupied = doc.RootElement.GetProperty("occupied").GetInt32();
@@ -126,7 +128,7 @@ namespace NewParkingAvailabilityServer
                         checkedItem = new ObjectInSpotItem(
                             id, 
                             true,
-                            0
+                            2
                         );
 
                     }
@@ -139,7 +141,7 @@ namespace NewParkingAvailabilityServer
                     checkedItem = new ObjectInSpotItem(
                         id,
                         true,
-                        0
+                        2
                     );
                 }
             }
@@ -214,7 +216,8 @@ namespace NewParkingAvailabilityServer
                             command.CommandText = $"UPDATE PSTotalResultsItems SET " +
                                 $"vehicle={currentItem.vehicle}, " +
                                 $"objectInSpot={currentItem.objectInSpot}, " +
-                                $"parkingSpaceObstructed={currentItem.parkingSpaceObstructed} " +
+                                $"parkingSpaceObstructed={currentItem.parkingSpaceObstructed}, " +
+                                $"sensorConnectedToNetwork={currentItem.sensorConnectedToNetwork} " +
                                 $"WHERE id={currentItem.Id}";
                             command.ExecuteNonQuery();
                         }
@@ -231,7 +234,7 @@ namespace NewParkingAvailabilityServer
                             var test = JsonConvert.SerializeObject(Convert.ToInt64(currentItem.convertedSpot.maintenanceAlert));
                             var http = new HttpClient();
                             var content = new StringContent(test, System.Text.Encoding.UTF8, "text/plain");
-                            var response = await http.PostAsync("http://10.18.28.240/error", content);
+                            var response = await http.PostAsync(microcontrollerIP + "error", content);
                             string json = await response.Content.ReadAsStringAsync();
                         }
                     }

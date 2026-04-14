@@ -17,7 +17,7 @@
       //desktop url
       //"applicationUrl": "https://192.168.50.235;https://localhost:7288",
       //desktop url
-      //"applicationUrl": "https://10.105.0.7;https://localhost:7288",
+      //"applicationUrl": "https://10.105.0.3:3124;https://localhost:7288",
       //local ip for rog zephyrus
       //"applicationUrl": "https://192.168.1.31:3124;https://localhost:7288;http://localhost:5287",
       //local ip for rog zephyrus
@@ -27,7 +27,11 @@
       //TPLink on UA campus
       //"applicationUrl": "https://10.18.31.4:3124;https://localhost:7288",
       //UA campus no hotspot
-      "applicationUrl": "https://10.175.27.122;https://localhost:7288",
+      //"applicationUrl": "https://10.175.27.122:3124;https://localhost:7288",
+      //tplink hotspot mode
+      //"applicationUrl": "https://192.168.0.105:3124;https://localhost:7288",
+      //tplink hotspot mode
+      "applicationUrl": "https://192.168.0.212:3124;https://localhost:7288",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

@@ -28,6 +28,9 @@ namespace NewParkingAvailabilityServer.Migrations.PSTotalResults
                     b.Property<bool>("parkingSpaceObstructed")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("sensorConnectedToNetwork")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("vehicle")
                         .HasColumnType("INTEGER");
 

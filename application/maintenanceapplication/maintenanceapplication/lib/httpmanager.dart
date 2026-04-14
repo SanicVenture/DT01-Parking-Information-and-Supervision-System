@@ -39,18 +39,20 @@ class PSTotalResults {
   final bool vehicle;
   final bool objectInSpot;
   final bool parkingSpaceObstructed;
+  final bool sensorConnectedToNetwork;
 
   const PSTotalResults({
     required this.id,
     required this.vehicle,
     required this.objectInSpot,
     required this.parkingSpaceObstructed,
+    required this.sensorConnectedToNetwork,
   });
 
   factory PSTotalResults.fromJson(Map<String, dynamic> json) {
     return switch (json) {
-      {'id': int id, 'vehicle': bool vehicle, 'objectInSpot': bool objectInSpot, 'parkingSpaceObstructed': bool parkingSpaceObstructed, 'convertedSpot': dynamic convertedSpot} =>
-        PSTotalResults(id: id, vehicle: vehicle, objectInSpot: objectInSpot, parkingSpaceObstructed: parkingSpaceObstructed),
+      {'id': int id, 'vehicle': bool vehicle, 'objectInSpot': bool objectInSpot, 'parkingSpaceObstructed': bool parkingSpaceObstructed, 'sensorConnectedToNetwork': bool sensorConnectedToNetwork} =>
+        PSTotalResults(id: id, vehicle: vehicle, objectInSpot: objectInSpot, parkingSpaceObstructed: parkingSpaceObstructed, sensorConnectedToNetwork: sensorConnectedToNetwork),
       _ => throw Exception('Invalid JSON format for PSTotalResults'),
     };
   }
@@ -65,7 +67,7 @@ class CompleteParkingSpace
   final bool vehicleStatus;
   final bool objectInSpot;
   final bool parkingSpaceObstructed;
-
+  final bool sensorConnectedToNetwork;
   const CompleteParkingSpace({
     required this.id,
     required this.floor,
@@ -74,6 +76,7 @@ class CompleteParkingSpace
     required this.vehicleStatus,
     required this.objectInSpot,
     required this.parkingSpaceObstructed,
+    required this.sensorConnectedToNetwork,
   });
 
   factory CompleteParkingSpace.fromParkingSpaceAndPSTotalResults(ParkingSpace parkingSpace, PSTotalResults psTotalResults) {
@@ -85,6 +88,7 @@ class CompleteParkingSpace
       vehicleStatus: psTotalResults.vehicle,
       objectInSpot: psTotalResults.objectInSpot,
       parkingSpaceObstructed: psTotalResults.parkingSpaceObstructed,
+      sensorConnectedToNetwork: psTotalResults.sensorConnectedToNetwork,
     );
   }
 }
@@ -113,7 +117,7 @@ Future<List<CompleteParkingSpace>> fetchCompleteParkingSpaces() async {
 
   return parkingSpaces.map((space) {
     final psTotalResult = psTotalResults.firstWhere((result) => result.id == space.id, 
-    orElse: () => PSTotalResults(id: space.id, vehicle: convertParkingSpaceToVehicleStatus(space), objectInSpot: space.occupied, parkingSpaceObstructed: convertParkingSpaceToObstructedStatus(space)));
+    orElse: () => PSTotalResults(id: space.id, vehicle: convertParkingSpaceToVehicleStatus(space), objectInSpot: space.occupied, parkingSpaceObstructed: convertParkingSpaceToObstructedStatus(space), sensorConnectedToNetwork: false));
     return CompleteParkingSpace.fromParkingSpaceAndPSTotalResults(space, psTotalResult);
   }).toList();
 }

@@ -455,7 +455,6 @@ class IPRoute extends StatefulWidget {
 class _IPRouteState extends State<IPRoute> {
   String selectedvalue4 = staticRemoteUrl;
 
-
   final TextEditingController _controller = TextEditingController(text: staticRemoteUrl);
 
   @override
@@ -478,7 +477,10 @@ class _IPRouteState extends State<IPRoute> {
             ElevatedButton(
               onPressed: () {
                 staticRemoteUrl = selectedvalue4;
-                Navigator.pop(context);
+                remoteUrl = selectedvalue4 + '/api';
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const MyHomePage(title: 'Home')),
+                );
               },
               child: const Text('Set IP Address'),
             ),
@@ -515,7 +517,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     futureParkingSpaces = fetchCompleteParkingSpaces();
 
-    _timer = Timer.periodic(const Duration(seconds: 10), (Timer t) {
+    _timer = Timer.periodic(const Duration(seconds: 5), (Timer t) {
       setState(() {
         futureParkingSpaces = fetchCompleteParkingSpaces();     
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -523,7 +525,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Error fetching data, showing last successful data'),
-                duration: Duration(seconds: 8),
+                duration: Duration(seconds: 3),
               ),
             );
           }
@@ -593,6 +595,15 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             ListTile(
               leading: const Icon(Icons.settings),
+              title: const Text('IP Configuration'),
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => IPRoute()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
               title: const Text('Subsystem Demo Menu'),
               onTap: () {
                 Navigator.push(context,
@@ -635,7 +646,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 final space = parkingSpaces[index];
                 final styleoftext = TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: space.maintenanceAlert ? Colors.red : Colors.black,
+                    color: space.sensorConnectedToNetwork ? (space.maintenanceAlert ? Colors.red : Colors.black) : const Color.fromARGB(255, 238, 184, 104),
                   );
                 // return ListTile(
                 //   title: Text('Parking Space Number: ${space.id}', style: styleoftext),
@@ -650,7 +661,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   subtitle: Text('Floor: ${space.floor}, Occupied: ${space.occupied}', style: styleoftext),
                   children: <Widget>[
                     Text('Is the Object a Vehicle: ${space.vehicleStatus}', style: styleoftext),
-                    Text('Object in Spot According To Sensor: ${space.objectInSpot}', style: styleoftext),
+                    space.sensorConnectedToNetwork ? Text('Object in Spot According To Sensor: ${space.objectInSpot}', style: styleoftext) : Text('Sensor Not Connected', style: styleoftext),
                     Text('Parking Space Obstructed According To Camera: ${space.parkingSpaceObstructed}', style: styleoftext),
                     Text('YOLO Detections:', style: styleoftext),
                     Image(
@@ -674,7 +685,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 final space = oldSpaces![index];
                 final styleoftext = TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: space.maintenanceAlert ? Colors.red : Colors.black,
+                    color: space.sensorConnectedToNetwork ? (space.maintenanceAlert ? Colors.red : Colors.black) : const Color.fromARGB(255, 238, 184, 104),
                   );
                 // return ListTile(
                 //   title: Text('Parking Space Number: ${space.id}', style: styleoftext),
@@ -689,7 +700,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   subtitle: Text('Floor: ${space.floor}, Occupied: ${space.occupied}', style: styleoftext),
                   children: <Widget>[
                     Text('Is the Object a Vehicle: ${space.vehicleStatus}', style: styleoftext),
-                    Text('Object in Spot According To Sensor: ${space.objectInSpot}', style: styleoftext),
+                    space.sensorConnectedToNetwork ? Text('Object in Spot According To Sensor: ${space.objectInSpot}', style: styleoftext) : Text('Sensor Not Connected', style: styleoftext),
                     Text('Parking Space Obstructed According To Camera: ${space.parkingSpaceObstructed}', style: styleoftext),
                     Text('YOLO Detections:', style: styleoftext),
                     Image(
@@ -719,6 +730,11 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Add Parking Space',
         child: const Icon(Icons.add),
       ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: _addParkingSpace,
+      //   tooltip: 'Add Parking Space',
+      //   child: const Icon(Icons.add),
+      // ),
     );
   }
 }

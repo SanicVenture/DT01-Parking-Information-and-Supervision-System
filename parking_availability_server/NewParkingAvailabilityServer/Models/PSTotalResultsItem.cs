@@ -8,6 +8,8 @@ namespace NewParkingAvailabilityServer.Models
         public bool vehicle { get; set; }
         public bool objectInSpot { get; set; }
         public bool parkingSpaceObstructed { get; set; }
+        public bool sensorConnectedToNetwork { get; set; } = true;
+
 
         [NotMapped]
         public ParkingSpaceItem? convertedSpot { get; set; } = null;
@@ -20,6 +22,7 @@ namespace NewParkingAvailabilityServer.Models
                 vehicle = openCVResultsItem.vehicle;
                 objectInSpot = objectInSpotItem.objectInSpot;
                 parkingSpaceObstructed = openCVResultsItem.parkingSpaceObstructed;
+                sensorConnectedToNetwork = objectInSpotItem.error == 2 ? false : true;
                 convertPSTotalResultsItem();
             }
         }

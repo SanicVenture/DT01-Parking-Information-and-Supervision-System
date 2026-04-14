@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:informationalapplication/httpmanager.dart';
 
 
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    final double textScaleFactor = 3;
+    final double textScaleFactor = isDesktop ? 3 : 1;
 
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScaleFactor)),
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
         title: 'Flutter Demo',
         theme: ThemeData(
           colorScheme: .fromSeed(seedColor: const Color.fromARGB(255, 255, 255, 255), brightness: Brightness.dark),
+          textTheme: GoogleFonts.overpassTextTheme(Theme.of(context).textTheme)
         ),
         home: MyHomePage(title: 'Parking Lot Entrance Information'),
       )

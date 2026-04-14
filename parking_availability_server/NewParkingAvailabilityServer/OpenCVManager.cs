@@ -26,17 +26,20 @@ namespace NewParkingAvailabilityServer
     public class OpenCVManager
     {
         private SQLManager sqlManager = new SQLManager();
-        private string streamURL = "rtsp://admin:Password@10.18.31.38:554";
-        private int msTimeout = 13000;
-        private int[] spotIds = [1, 2, 3]; //example parking spot IDs
+        //private string streamURL = "rtsp://admin:Password@10.18.31.38:554";
+        private string streamURL = "rtsp://admin:Password@192.168.0.50:554";
+        private int msTimeout = 2000;
+        private int[] spotIds = [1]; //example parking spot IDs
         private bool showDetections = false;
 
         //This string array of acceptable vehicles is just an example of what the
         //OpenCV implementation will look for.
         private string[] acceptableVehicles = ["car", "motorcycle", "van", "truck", "bus", "bicycle"];
+        private string[] ignoredObjects = ["person", "chair", "dog", "cat", "backpack", "suitcase", "handbag", "tie", "bottle", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "cell phone", "book"];
 
         public async void StartImageRecognition()
         {
+            using Mutex mut = new Mutex(false);
             //Console.WriteLine("Enter Number of Parking Spots:");
 
             //string input = Console.ReadLine();
@@ -125,14 +128,16 @@ namespace NewParkingAvailabilityServer
             return [false, false]; //placeholder return value
         }
 
+        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+
         private async void ImageRecognition(int Id)
         {
             string outputPath = $"output_frame_{Id}.bmp";
             while (true)
             {
-                using Mutex mut = new Mutex(false, "SQLManagerMutex");
-                if (mut.WaitOne())
-                {
+                //try
+                //{
+                    await _semaphore.WaitAsync();
                     using (var capture = new VideoCapture(streamURL))
                     //using (var capture = new VideoCapture())
                     {
@@ -140,7 +145,7 @@ namespace NewParkingAvailabilityServer
                         {
                             Console.WriteLine("ERROR: could not open camera stream.");
                             await sqlManager.CheckForMicrocontrollerData(Id);
-                            mut.ReleaseMutex();
+                            _semaphore.Release();
                             Thread.Sleep(msTimeout);
                             //need to add a proper camera error state.
                             continue;
@@ -151,10 +156,9 @@ namespace NewParkingAvailabilityServer
                         //using (Mat frame = Cv2.ImRead("660133120_2111104549684688_1260124105542542725_n.jpg"))
                         //using (Mat frame = Cv2.ImRead("input_frame_with_cones.png"))
                         {
-
                             capture.Read(frame);
                             capture.Dispose();
-                            mut.ReleaseMutex();
+                            _semaphore.Release();
 
                             if (frame.Empty())
                             {
@@ -260,25 +264,30 @@ namespace NewParkingAvailabilityServer
                                             new SixLabors.ImageSharp.PointF(detection.Bounds.X, detection.Bounds.Y + 20));
                                     });
 
-                                    bool[] objectInParkingSpace = RectangleChecker(detection, polygon);
-                                    //first boolean is is object in spot, second boolean is if the boolean is properly in the spot. 
+                                    if (!ignoredObjects.Contains(detection.Name.Name))
+                                    {
+                                        bool[] objectInParkingSpace = RectangleChecker(detection, polygon);
+                                        //first boolean is is object in spot, second boolean is if the boolean is properly in the spot. 
 
-                                    if (objectInParkingSpace[0] && !objectInParkingSpace[1])
-                                    {
-                                        openCVresult = new OpenCVResultsItem(Id, false, true);
-                                    }
-                                    else if (objectInParkingSpace[0] && objectInParkingSpace[1])
-                                    {
-                                        if (acceptableVehicles.Contains(detection.Name.Name))
-                                        {
-                                            openCVresult = new OpenCVResultsItem(Id, true, true);
-                                            break;
-                                        }
-                                        else
+                                        if (objectInParkingSpace[0] && !objectInParkingSpace[1])
                                         {
                                             openCVresult = new OpenCVResultsItem(Id, false, true);
                                         }
+                                        else if (objectInParkingSpace[0] && objectInParkingSpace[1])
+                                        {
+                                            if (acceptableVehicles.Contains(detection.Name.Name))
+                                            {
+                                                openCVresult = new OpenCVResultsItem(Id, true, true);
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                openCVresult = new OpenCVResultsItem(Id, false, true);
+                                            }
+                                        }                                        
                                     }
+
+
 
                                     //if those don't pass, here will be where the more classical detection of objects could be thrown in. 
 
@@ -441,8 +450,20 @@ namespace NewParkingAvailabilityServer
                             }
                         }
                     }
-                }
+                //}
+                //catch (Exception e)
+                //{
 
+                //}
+                //finally
+                //{
+                //    if (_semaphore.CurrentCount == 1)
+                //    {
+                //        _semaphore.Release();
+                //    }
+                //}
+
+                    //mut.ReleaseMutex();
                 
             }
         }
