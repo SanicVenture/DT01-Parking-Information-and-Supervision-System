@@ -560,6 +560,13 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _deleteOpenCVPoints() async {
+    await deleteOpenCVPoints();
+    setState(() {
+      futureParkingSpaces = fetchCompleteParkingSpaces();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -726,9 +733,9 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
 
       floatingActionButton: FloatingActionButton(
-        onPressed: _addParkingSpace,
+        onPressed: _deleteOpenCVPoints,
         tooltip: 'Add Parking Space',
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.delete),
       ),
       // floatingActionButton: FloatingActionButton(
       //   onPressed: _addParkingSpace,

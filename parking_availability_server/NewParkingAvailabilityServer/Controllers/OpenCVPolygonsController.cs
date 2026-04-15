@@ -9,7 +9,7 @@ using NewParkingAvailabilityServer.Models;
 
 namespace NewParkingAvailabilityServer.Controllers
 {
-    [Route("api/OpenCVPolygonsItems")]
+    [Route("api/opencvpolygonsitems")]
     [ApiController]
     public class OpenCVPolygonsController : ControllerBase
     {

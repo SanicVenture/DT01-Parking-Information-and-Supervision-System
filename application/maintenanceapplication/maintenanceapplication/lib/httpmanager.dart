@@ -168,6 +168,20 @@ Future<void> createNewParkingSpace() async {
   }
 }
 
+Future<void> deleteOpenCVPoints() async {
+  final response = await http.delete(
+    Uri.parse('${isAndroid ? remoteUrl : localUrl}/opencvpolygonsitems/1'),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(<String, dynamic>{'id': 1,}),
+  );
+
+  if (response.statusCode != 204) {
+    throw Exception('Failed to send maintenance alert');
+  }
+}
+
 Future<void> createNewPSFinal(int Id, String vehicle, String objectinspace, String parkingspaceobstructed) async {
   final response = await http.put(
     Uri.parse('${isAndroid ? remoteUrl : localUrl}/pstotalresultsitems/$Id'),
