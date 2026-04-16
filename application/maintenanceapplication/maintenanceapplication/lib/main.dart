@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:maintenanceapplication/httpmanager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -10,10 +12,26 @@ class MyHttpOverrides extends HttpOverrides {
       ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   }
 }
-void main() {
+void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = MyHttpOverrides();
+    if (!isDesktop)
+  {  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);}
   runApp(MyApp());
+
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  bool hasKey = prefs.containsKey('remoteIP');
+
+  if (!hasKey) {
+    await prefs.setString('remoteIP', remoteUrl);
+  }
+  else {
+    String? storedIP = prefs.getString('remoteIP');
+    if (storedIP != null) {
+      remoteUrl = storedIP;
+      staticRemoteUrl = storedIP.replaceAll('/api', '');
+    }
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -21,6 +39,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -478,6 +497,7 @@ class _IPRouteState extends State<IPRoute> {
               onPressed: () {
                 staticRemoteUrl = selectedvalue4;
                 remoteUrl = selectedvalue4 + '/api';
+                saveIP();
                 Navigator.push(context,
                   MaterialPageRoute(builder: (context) => const MyHomePage(title: 'Home')),
                 );
@@ -489,6 +509,11 @@ class _IPRouteState extends State<IPRoute> {
       ),
     );
   }
+}
+
+void saveIP() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setString('remoteIP', remoteUrl);
 }
 
 //home page code
@@ -517,7 +542,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     futureParkingSpaces = fetchCompleteParkingSpaces();
 
-    _timer = Timer.periodic(const Duration(seconds: 5), (Timer t) {
+    _timer = Timer.periodic(const Duration(seconds: 7), (Timer t) {
       setState(() {
         futureParkingSpaces = fetchCompleteParkingSpaces();     
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -669,7 +694,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: <Widget>[
                     Text('Is the Object a Vehicle: ${space.vehicleStatus}', style: styleoftext),
                     space.sensorConnectedToNetwork ? Text('Object in Spot According To Sensor: ${space.objectInSpot}', style: styleoftext) : Text('Sensor Not Connected', style: styleoftext),
-                    Text('Parking Space Obstructed According To Camera: ${space.parkingSpaceObstructed}', style: styleoftext),
+                    Text('Parking Space Occupied According To Camera: ${space.parkingSpaceObstructed}', style: styleoftext),
                     Text('YOLO Detections:', style: styleoftext),
                     Image(
                       image: provider,

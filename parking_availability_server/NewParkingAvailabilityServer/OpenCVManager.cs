@@ -35,11 +35,13 @@ namespace NewParkingAvailabilityServer
         //This string array of acceptable vehicles is just an example of what the
         //OpenCV implementation will look for.
         private string[] acceptableVehicles = ["car", "motorcycle", "van", "truck", "bus", "bicycle"];
-        private string[] ignoredObjects = ["person", "chair", "dog", "cat", "backpack", "suitcase", "handbag", "tie", "bottle", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "cell phone", "book"];
+        private string[] ignoredObjects = ["person", "dog", "cat", "backpack", "suitcase", "handbag", "tie", "bottle", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "cell phone", "book"];
 
         public async void StartImageRecognition()
         {
             using Mutex mut = new Mutex(false);
+            //var temp = GetParkingSpaceItems();
+
             //Console.WriteLine("Enter Number of Parking Spots:");
 
             //string input = Console.ReadLine();
@@ -249,23 +251,24 @@ namespace NewParkingAvailabilityServer
 
                                 foreach (Detection detection in result)
                                 {
-                                    var rectangle = new SixLabors.ImageSharp.RectangleF(
-                                        detection.Bounds.X,
-                                        detection.Bounds.Y,
-                                        detection.Bounds.Width,
-                                        detection.Bounds.Height);
-                                    image.Mutate(ctx =>
-                                    {
-                                        ctx.Draw(Rgba32.ParseHex("FF0000"), 2, rectangle);
-                                        ctx.DrawText(
-                                            detection.Name.Name,
-                                            SystemFonts.CreateFont("Arial", 32),
-                                            Rgba32.ParseHex("FF0000"),
-                                            new SixLabors.ImageSharp.PointF(detection.Bounds.X, detection.Bounds.Y + 20));
-                                    });
 
                                     if (!ignoredObjects.Contains(detection.Name.Name))
                                     {
+                                        var rectangle = new SixLabors.ImageSharp.RectangleF(
+                                            detection.Bounds.X,
+                                            detection.Bounds.Y,
+                                            detection.Bounds.Width,
+                                            detection.Bounds.Height);
+                                        image.Mutate(ctx =>
+                                        {
+                                            ctx.Draw(Rgba32.ParseHex("FF0000"), 2, rectangle);
+                                            ctx.DrawText(
+                                                detection.Name.Name,
+                                                SystemFonts.CreateFont("Arial", 32),
+                                                Rgba32.ParseHex("FF0000"),
+                                                new SixLabors.ImageSharp.PointF(detection.Bounds.X, detection.Bounds.Y + 20));
+                                        });
+
                                         bool[] objectInParkingSpace = RectangleChecker(detection, polygon);
                                         //first boolean is is object in spot, second boolean is if the boolean is properly in the spot. 
 
@@ -296,11 +299,11 @@ namespace NewParkingAvailabilityServer
                                 await sqlManager.CreateNewOpenCVResultsEntry(openCVresult);
                                 await sqlManager.CheckForMicrocontrollerData(Id);
 
-                                var pen = Pens.Solid(SixLabors.ImageSharp.Color.Blue, 3f);
+                                var pen = Pens.Solid(SixLabors.ImageSharp.Color.Blue, 12f);
 
 
-                                //convert opencv points to sixlabors points
-                                SixLabors.ImageSharp.PointF[] polygonSixLabors = new SixLabors.ImageSharp.PointF[]
+                            //convert opencv points to sixlabors points
+                            SixLabors.ImageSharp.PointF[] polygonSixLabors = new SixLabors.ImageSharp.PointF[]
                                 {
                                 new SixLabors.ImageSharp.PointF(polygon[0][0].X, polygon[0][0].Y),
                                 new SixLabors.ImageSharp.PointF(polygon[0][1].X, polygon[0][1].Y),
