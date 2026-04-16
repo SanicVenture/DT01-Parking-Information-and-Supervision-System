@@ -117,7 +117,7 @@ void loop(void)
   Serial.print(dist);
   Serial.println(" cm");
 
-  if (dist <= 100) {
+  if (dist <= 50) {
     digitalWrite(rLED,1);
     digitalWrite(gLED,0);
     app_occupied = 1;
