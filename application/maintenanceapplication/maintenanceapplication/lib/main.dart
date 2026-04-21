@@ -542,7 +542,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     futureParkingSpaces = fetchCompleteParkingSpaces();
 
-    _timer = Timer.periodic(const Duration(seconds: 7), (Timer t) {
+    _timer = Timer.periodic(const Duration(seconds: 15), (Timer t) {
       setState(() {
         futureParkingSpaces = fetchCompleteParkingSpaces();     
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -550,7 +550,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Error fetching data, showing last successful data'),
-                duration: Duration(seconds: 3),
+                duration: Duration(seconds: 5),
               ),
             );
           }
