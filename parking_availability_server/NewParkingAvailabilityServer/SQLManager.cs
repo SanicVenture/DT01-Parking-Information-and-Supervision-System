@@ -1,5 +1,9 @@
 ﻿using Microsoft.Data.Sqlite;
 using NewParkingAvailabilityServer.Models;
+using Newtonsoft.Json;
+using System.Linq.Expressions;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace NewParkingAvailabilityServer
 {
@@ -8,13 +12,17 @@ namespace NewParkingAvailabilityServer
         public string connectionString = "Data Source=ParkingSpots.db";
         public string psfinalconnectionString = "Data Source=PSFinal.db";
         public string objectinspotconnectionString = "Data Source=ObjectInSpot.db";
-        public string opencvconnectionString = "Data Source=OpenCVResults.db";
+        public string openCVConnectionString = "Data Source=OpenCVResults.db";
+        public string opencvpolygonsconnectionString = "Data Source=OpenCVPolygons.db";
+        public bool microcontrollerON = true;
+        public string microcontrollerIP = "http://192.168.0.120/";
+        //public string microcontrollerIP = "http://10.18.28.240/";
 
         public void ChangeSpotFromFinalState(long id)
         {
             PSTotalResultsItem? currentItem = null;
             try
-            { 
+            {
                 using (var conn = new SqliteConnection(psfinalconnectionString))
                 {
                     conn.Open();
@@ -32,19 +40,19 @@ namespace NewParkingAvailabilityServer
                             );
                         }
                     }
-                }            
-            
+                }
+
             }
             catch (SqliteException e)
-            { 
-            
-            
+            {
+
+
             }
 
             if (currentItem is not null)
             {
                 try
-                { 
+                {
                     using (var conn = new SqliteConnection(connectionString))
                     {
                         conn.Open();
@@ -58,13 +66,13 @@ namespace NewParkingAvailabilityServer
                 }
                 catch (SqliteException ex)
                 {
-                
+
                 }
             }
         }
 
         //called by the OpenCVResultsController
-        public void CheckForMicrocontrollerData(long id)
+        public async Task CheckForMicrocontrollerData(long id)
         {
             ObjectInSpotItem? checkedItem = null;
             try
@@ -80,7 +88,8 @@ namespace NewParkingAvailabilityServer
                         {
                             checkedItem = new ObjectInSpotItem(
                                 reader.GetInt32(reader.GetOrdinal("Id")),
-                                Convert.ToBoolean(reader.GetInt32(reader.GetOrdinal("objectInSpot")))
+                                Convert.ToBoolean(reader.GetInt32(reader.GetOrdinal("objectInSpot"))),
+                                reader.GetInt32(reader.GetOrdinal("error"))
                             );
                         }
                     }
@@ -93,10 +102,56 @@ namespace NewParkingAvailabilityServer
 
             }
 
+
+            //change this to be if it is null, then continue the code!
+
+            if (checkedItem is null)
+            {
+                try
+                {
+                    if (microcontrollerON)
+                    {
+                        var http = new HttpClient();
+                        var json = await http.GetStringAsync(microcontrollerIP);
+
+                        var doc = JsonDocument.Parse(json);
+                        int occupied = doc.RootElement.GetProperty("occupied").GetInt32();
+                        int error = doc.RootElement.GetProperty("error").GetInt32();
+                        checkedItem = new ObjectInSpotItem(
+                            id,
+                            Convert.ToBoolean(occupied),
+                            error
+                        );
+                    }
+                    else
+                    {
+                        checkedItem = new ObjectInSpotItem(
+                            id, 
+                            true,
+                            2
+                        );
+
+                    }
+
+
+
+                }
+                catch (Exception e)
+                {
+                    checkedItem = new ObjectInSpotItem(
+                        id,
+                        true,
+                        2
+                    );
+                }
+            }
+
+
+            //add error state to table!!!
             if (checkedItem is not null)
             {
                 OpenCVResultsItem? openCVCorrespondingItem = null;
-                using (var conn = new SqliteConnection(opencvconnectionString))
+                using (var conn = new SqliteConnection(openCVConnectionString))
                 {
                     conn.Open();
                     var command = conn.CreateCommand();
@@ -132,23 +187,63 @@ namespace NewParkingAvailabilityServer
 
                 PSTotalResultsItem currentItem = new PSTotalResultsItem(openCVCorrespondingItem, checkedItem);
 
-                try
+                if (currentItem.Id != -1)
                 {
-                    using (var conn = new SqliteConnection(connectionString))
+                    try
                     {
-                        conn.Open();
-                        var command = conn.CreateCommand();
-                        command.CommandText = $"UPDATE ParkingSpaceItems SET " +
-                            $"occupied={currentItem.convertedSpot.occupied}, " +
-                            $"maintenanceAlert={currentItem.convertedSpot.maintenanceAlert} " +
-                            $"WHERE id={currentItem.Id}";
-                        command.ExecuteNonQuery();
+                        using (var conn = new SqliteConnection(connectionString))
+                        {
+                            conn.Open();
+                            var command = conn.CreateCommand();
+                            command.CommandText = $"UPDATE ParkingSpaceItems SET " +
+                                $"occupied={currentItem.convertedSpot.occupied}, " +
+                                $"maintenanceAlert={currentItem.convertedSpot.maintenanceAlert} " +
+                                $"WHERE id={currentItem.Id}";
+                            command.ExecuteNonQuery();
+                        }
                     }
-                }
-                catch (SqliteException ex)
-                {
+                    catch (SqliteException ex)
+                    {
+
+                    }
+
+                    try
+                    {
+                        using (var conn = new SqliteConnection(psfinalconnectionString))
+                        {
+                            conn.Open();
+                            var command = conn.CreateCommand();
+                            command.CommandText = $"UPDATE PSTotalResultsItems SET " +
+                                $"vehicle={currentItem.vehicle}, " +
+                                $"objectInSpot={currentItem.objectInSpot}, " +
+                                $"parkingSpaceObstructed={currentItem.parkingSpaceObstructed}, " +
+                                $"sensorConnectedToNetwork={currentItem.sensorConnectedToNetwork} " +
+                                $"WHERE id={currentItem.Id}";
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                    catch (SqliteException ex)
+                    {
+
+                    }
+
+                    try
+                    {
+                        if (microcontrollerON)
+                        {
+                            var test = JsonConvert.SerializeObject(Convert.ToInt64(currentItem.convertedSpot.maintenanceAlert));
+                            var http = new HttpClient();
+                            var content = new StringContent(test, System.Text.Encoding.UTF8, "text/plain");
+                            var response = await http.PostAsync(microcontrollerIP + "error", content);
+                            string json = await response.Content.ReadAsStringAsync();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                    }
 
                 }
+
             }
         }
 
@@ -158,7 +253,7 @@ namespace NewParkingAvailabilityServer
             OpenCVResultsItem? checkedItem = null;
             try
             {
-                using (var conn = new SqliteConnection(opencvconnectionString))
+                using (var conn = new SqliteConnection(openCVConnectionString))
                 {
                     conn.Open();
                     var command = conn.CreateCommand();
@@ -199,7 +294,8 @@ namespace NewParkingAvailabilityServer
                             {
                                 objectInSpotItem = new ObjectInSpotItem(
                                     reader.GetInt32(reader.GetOrdinal("Id")),
-                                    Convert.ToBoolean(reader.GetInt32(reader.GetOrdinal("objectInSpot")))
+                                    Convert.ToBoolean(reader.GetInt32(reader.GetOrdinal("objectInSpot"))),
+                                    reader.GetInt32(reader.GetOrdinal("error"))
                                 );
                             }
                         }
@@ -211,7 +307,7 @@ namespace NewParkingAvailabilityServer
                     }
 
                     //deleting the other item so that we don't trigger an incorrect condition
-                    using (var conn = new SqliteConnection(opencvconnectionString))
+                    using (var conn = new SqliteConnection(openCVConnectionString))
                     {
                         conn.Open();
                         var command = conn.CreateCommand();
@@ -272,11 +368,11 @@ namespace NewParkingAvailabilityServer
             }
         }
 
-        public async Task createnewOpenCVResultsEntry(OpenCVResultsItem todoItem) //fix this so that it can check if an object exists already. Gotta have maximum safety.
+        public async Task CreateNewOpenCVResultsEntry(OpenCVResultsItem todoItem) //fix this so that it can check if an object exists already. Gotta have maximum safety.
         {
             try
             {
-                using (var conn = new SqliteConnection(opencvconnectionString))
+                using (var conn = new SqliteConnection(openCVConnectionString))
                 {
                     conn.Open();
                     var command = conn.CreateCommand();
@@ -312,5 +408,67 @@ namespace NewParkingAvailabilityServer
 
             }
         }
+
+        //add a thing where we jsonify the polygons and save them in the sql table.
+
+        public async Task createNewPolygonEntry(OpenCvSharp.Point[][] todoItem, int Id)
+        {
+
+            
+            //OpenCVPolygonsItem newItem = new OpenCVPolygonsItem(
+            //    Id,
+            //    jsonPolygons
+            //);
+            try
+            {
+                using (var conn = new SqliteConnection(opencvpolygonsconnectionString))
+                {
+                    conn.Open();
+                    var command = conn.CreateCommand();
+                    string jsonPolygons = JsonConvert.SerializeObject(todoItem);
+                    command.CommandText = $"INSERT INTO OpenCVPolygonsItems " +
+                        $"VALUES ({Id}," +
+                        $" '{jsonPolygons}')";
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (SqliteException ex)
+            {
+
+            }
+        }
+
+        public OpenCvSharp.Point[][] OpenPolygonEntry(int Id)
+        {
+            OpenCvSharp.Point[][]? polygons = null;
+
+            try
+            {
+                using (var conn = new SqliteConnection(opencvpolygonsconnectionString))
+                {
+                    conn.Open();
+                    var command = conn.CreateCommand();
+                    command.CommandText = $"SELECT * FROM OpenCVPolygonsItems WHERE Id={Id};";
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            polygons = JsonConvert.DeserializeObject<OpenCvSharp.Point[][]>(reader.GetString(reader.GetOrdinal("polygonPoints")));
+                        }
+                    }
+                }
+            }
+
+            catch (SqliteException ex)
+            {
+
+            }
+
+            return polygons;
+        }
+
     }
+
+
+
 }

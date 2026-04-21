@@ -55,7 +55,7 @@ namespace NewParkingAvailabilityServer.Controllers
 
             if (!OpenCVResultsItemExists(id))
             {
-                await sQLManager.createnewOpenCVResultsEntry(todoItem);
+                await sQLManager.CreateNewOpenCVResultsEntry(todoItem);
             }
 
             _context.Entry(todoItem).State = EntityState.Modified;

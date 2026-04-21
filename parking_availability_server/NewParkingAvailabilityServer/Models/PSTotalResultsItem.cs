@@ -1,22 +1,28 @@
-﻿namespace NewParkingAvailabilityServer.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace NewParkingAvailabilityServer.Models
 {
     public class PSTotalResultsItem
     {
-        public int Id { get; set; }
+        public int Id { get; set; } = -1;
         public bool vehicle { get; set; }
         public bool objectInSpot { get; set; }
         public bool parkingSpaceObstructed { get; set; }
+        public bool sensorConnectedToNetwork { get; set; } = true;
 
-        public ParkingSpaceItem convertedSpot { get; set; }
+
+        [NotMapped]
+        public ParkingSpaceItem? convertedSpot { get; set; } = null;
 
         public PSTotalResultsItem(OpenCVResultsItem openCVResultsItem, ObjectInSpotItem objectInSpotItem)
         {
-            if (openCVResultsItem.Id == objectInSpotItem.Id)
+            if (openCVResultsItem != null && objectInSpotItem != null && openCVResultsItem.Id == objectInSpotItem.Id)
             {
                 Id = openCVResultsItem.Id;
                 vehicle = openCVResultsItem.vehicle;
                 objectInSpot = objectInSpotItem.objectInSpot;
                 parkingSpaceObstructed = openCVResultsItem.parkingSpaceObstructed;
+                sensorConnectedToNetwork = objectInSpotItem.error == 2 ? false : true;
                 convertPSTotalResultsItem();
             }
         }

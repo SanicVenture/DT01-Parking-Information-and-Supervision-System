@@ -13,6 +13,8 @@ builder.Services.AddDbContext<ParkingSpaceContext>(opt => opt.UseSqlite(builder.
 builder.Services.AddDbContext<PSTotalResultsContext>(opt => opt.UseSqlite(builder.Configuration.GetConnectionString("SecondConnection")));
 builder.Services.AddDbContext<ObjectInSpotContext>(opt => opt.UseSqlite(builder.Configuration.GetConnectionString("ObjectInSpotConnection")));
 builder.Services.AddDbContext<OpenCVResultsContext>(opt => opt.UseSqlite(builder.Configuration.GetConnectionString("OpenCVResultsConnection")));
+builder.Services.AddDbContext<OpenCVPolygonsContext>(opt => opt.UseSqlite(builder.Configuration.GetConnectionString("OpenCVPolygonsConnection")));
+
 
 var app = builder.Build();
 
@@ -27,6 +29,8 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseStaticFiles();
 
 OpenCVManager openCVManager = new OpenCVManager();
 openCVManager.StartImageRecognition();
