@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,9 +7,8 @@ import 'package:informationalapplication/httpmanager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/**This application shows parking lot occupancy information to someone who wants to park in a parking area.
- * This application is fit for desktop and mobile.
- */
+/// This application shows parking lot occupancy information to someone who wants to park in a parking area.
+/// This application is fit for desktop and mobile.
 
 
  // Here, we are overriding the HttpClient to allow self-signed certificates. This allows us to connect to the
@@ -128,7 +126,7 @@ class _IPRouteState extends State<IPRoute> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('Select Parking Space Id:', style: TextStyle(color: Theme.of(context).colorScheme.onSurface),),
+            Text('IP Address:', style: TextStyle(color: Theme.of(context).colorScheme.onSurface),),
             TextField(
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               controller: _controller,
@@ -165,7 +163,7 @@ bool shownOnce = false;
 class _MyHomePageState extends State<MyHomePage> {
   Timer? _timer;
   late Future<List<ParkingSpace>> futureParkingSpaces;
-  late List<ParkingSpace> oldSpaces; //cached parking spaces
+  List<ParkingSpace>? oldSpaces; //cached parking spaces
   bool failure = false; //used to check if error message should be shown
 
   @override
@@ -293,14 +291,14 @@ class _MyHomePageState extends State<MyHomePage> {
               final List<List<ParkingSpace>> byFloorList = [];
               final List<int> availablePerFloor = [];
               int maxFloor = 0;
-              for (var space in oldSpaces) {
+              for (var space in oldSpaces!) {
                 if (space.floor > maxFloor) {
                   maxFloor = space.floor;
                 }
               }
 
               for (var i = 1; i <= maxFloor; i++) {
-                byFloorList.add(oldSpaces.where((space) => space.floor == i).toList());
+                byFloorList.add(oldSpaces!.where((space) => space.floor == i).toList());
               }
 
               for (var floor in byFloorList) {

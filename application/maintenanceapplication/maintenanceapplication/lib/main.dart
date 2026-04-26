@@ -58,29 +58,28 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class SecondRoute extends StatefulWidget {
-  SecondRoute({super.key});
+// Used during midterm demo for simulating both camera vision output and microcontroller sensor output
+class PSSimulateRoute extends StatefulWidget {
+  PSSimulateRoute({super.key});
   
   @override
-  State<StatefulWidget> createState() => _SecondRouteState();
+  State<StatefulWidget> createState() => _PSSimulateRouteState();
 }
 
-class _SecondRouteState extends State<SecondRoute> {
-
+class _PSSimulateRouteState extends State<PSSimulateRoute> {
   final List<String> trueOrFalse = ['True', 'False'];
-
   String? selectedvalue1 = 'True';
   String? selectedvalue2 = 'True';
   String? selectedvalue3 = 'True';
   int selectedvalue4 = 0;
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Parking Spot Simulation'),
+        title: const Text('Parking Spot Simulation: Camera and Microcontroller Inputs'),
       ),
+      //the sandwich menu on the top left
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -108,10 +107,10 @@ class _SecondRouteState extends State<SecondRoute> {
             ),
             ListTile(
               leading: const Icon(Icons.settings),
-              title: const Text('Subsystem Demo Menu'),
+              title: const Text('Parking Spot Simulation'),
               onTap: () {
                 Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => SecondRoute()),
+                  MaterialPageRoute(builder: (context) => PSSimulateRoute()),
                 );
               },
             ),
@@ -221,20 +220,19 @@ class ObjectInSpotRoute extends StatefulWidget {
   State<StatefulWidget> createState() => _ObjectInSpotRouteState();
 }
 
+// Used during midterm demo for simulating microcontroller sensor output
 class _ObjectInSpotRouteState extends State<ObjectInSpotRoute> {
-
   final List<String> trueOrFalse = ['True', 'False'];
-
   String? selectedvalue2 = 'True';
   int selectedvalue4 = 0;
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Parking Spot Simulation'),
+        title: const Text('Microcontroller Output Simulation'),
       ),
+      //the sandwich menu on the top left
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -262,10 +260,10 @@ class _ObjectInSpotRouteState extends State<ObjectInSpotRoute> {
             ),
             ListTile(
               leading: const Icon(Icons.settings),
-              title: const Text('Subsystem Demo Menu'),
+              title: const Text('Parking Spot Simulation'),
               onTap: () {
                 Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => SecondRoute()),
+                  MaterialPageRoute(builder: (context) => PSSimulateRoute()),
                 );
               },
             ),
@@ -334,8 +332,7 @@ class _ObjectInSpotRouteState extends State<ObjectInSpotRoute> {
   }
 }
 
-// open cv result code
-
+// Used during midterm demo for simulating camera vision output
 class OpenCVResultRoute extends StatefulWidget {
   OpenCVResultRoute({super.key});
   
@@ -344,9 +341,7 @@ class OpenCVResultRoute extends StatefulWidget {
 }
 
 class _OpenCVResultRouteState extends State<OpenCVResultRoute> {
-
   final List<String> trueOrFalse = ['True', 'False'];
-
   String? selectedvalue1 = 'True';
   String? selectedvalue3 = 'True';
   int selectedvalue4 = 0;
@@ -356,8 +351,9 @@ class _OpenCVResultRouteState extends State<OpenCVResultRoute> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Parking Spot Simulation'),
+        title: const Text('Camera Vision Output Simulation'),
       ),
+      //the sandwich menu on the top left. 
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -385,10 +381,10 @@ class _OpenCVResultRouteState extends State<OpenCVResultRoute> {
             ),
             ListTile(
               leading: const Icon(Icons.settings),
-              title: const Text('Subsystem Demo Menu'),
+              title: const Text('Parking Spot Simulation'),
               onTap: () {
                 Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => SecondRoute()),
+                  MaterialPageRoute(builder: (context) => PSSimulateRoute()),
                 );
               },
             ),
@@ -494,7 +490,7 @@ class _IPRouteState extends State<IPRoute> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('Select Parking Space Id:'),
+            Text('IP Address:'),
             TextField(
               controller: _controller,
               keyboardType: TextInputType.text,
@@ -542,7 +538,7 @@ class MyHomePage extends StatefulWidget {
 bool shownOnce = false;
 class _MyHomePageState extends State<MyHomePage> {
   late Future<List<CompleteParkingSpace>> futureParkingSpaces;
-  late List<ParkingSpace> oldSpaces; //cached parking spaces
+  List<CompleteParkingSpace>? oldSpaces; //cached parking spaces
   bool failure = false; //used to check if error message should be shown
 
   Timer? _timer;
@@ -580,8 +576,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-
-
   @override
   void dispose() {
     _timer?.cancel();
@@ -595,6 +589,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  //deletes the four corners of the camera vision boundaries that are stored on the server end.
   void _deleteOpenCVPoints() async {
     await deleteOpenCVPoints();
     setState(() {
@@ -609,7 +604,7 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-
+      //the sandwich menu on the top left
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -646,10 +641,10 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             ListTile(
               leading: const Icon(Icons.settings),
-              title: const Text('Subsystem Demo Menu'),
+              title: const Text('Parking Spot Simulation'),
               onTap: () {
                 Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => SecondRoute()),
+                  MaterialPageRoute(builder: (context) => PSSimulateRoute()),
                 );
               },
             ),
@@ -679,23 +674,22 @@ class _MyHomePageState extends State<MyHomePage> {
         future: futureParkingSpaces,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            failure = false;
+            failure = false; //don't show error message
             final parkingSpaces = snapshot.data!;
-            oldSpaces = parkingSpaces;
+            oldSpaces = parkingSpaces; //cache parking spaces
             return ListView.builder(
               itemCount: parkingSpaces.length,
               itemBuilder: (context, index) {
                 final space = parkingSpaces[index];
                 final styleoftext = TextStyle(
                     fontWeight: FontWeight.bold,
+                    //If the microcontroller is offline, the entry is colored orange. If there is something wrong with the spot, then it is red. Otherwise, it is black.
                     color: space.sensorConnectedToNetwork ? (space.maintenanceAlert ? Colors.red : Colors.black) : const Color.fromARGB(255, 238, 184, 104),
                   );
-                // return ListTile(
-                //   title: Text('Parking Space Number: ${space.id}', style: styleoftext),
-                //   subtitle: Text('Floor: ${space.floor}, Occupied: ${space.occupied}', style: styleoftext),
-                // );
+                //if there is a way for the detection images to not be static images, then it should be changed.
                 final imageURL = '${isAndroid ? staticRemoteUrl : staticLocalUrl}/images/output_frame_with_detections_${space.id}.png';
                 final provider = NetworkImage(imageURL);
+                //done to guarantee image is actually updated
                 provider.evict();
                 var imageKey = ValueKey(DateTime.now().toString());
                 return ExpansionTile(
@@ -727,14 +721,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 final space = oldSpaces![index];
                 final styleoftext = TextStyle(
                     fontWeight: FontWeight.bold,
+                    //If the microcontroller is offline, the entry is colored orange. If there is something wrong with the spot, then it is red. Otherwise, it is black.
                     color: space.sensorConnectedToNetwork ? (space.maintenanceAlert ? Colors.red : Colors.black) : const Color.fromARGB(255, 238, 184, 104),
                   );
-                // return ListTile(
-                //   title: Text('Parking Space Number: ${space.id}', style: styleoftext),
-                //   subtitle: Text('Floor: ${space.floor}, Occupied: ${space.occupied}', style: styleoftext),
-                // );
+                //if there is a way for the detection images to not be static images, then it should be changed.
                 final imageURL = '${isAndroid ? staticRemoteUrl : staticLocalUrl}/images/output_frame_with_detections_${space.id}.png';
                 final provider = NetworkImage(imageURL);
+                //done to guarantee image is actually updated
                 provider.evict();
                 var imageKey = ValueKey(DateTime.now().toString());
                 return ExpansionTile(
@@ -767,9 +760,11 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
 
+      //In a production environment, there would be a menu to select which spot the worker wants to delete the camera vision points from. 
+      //This is currently mostly for the purposes of quickly changing the boundary points for the demo day parking spot, which is spot ID = 1.
       floatingActionButton: FloatingActionButton(
         onPressed: _deleteOpenCVPoints,
-        tooltip: 'Add Parking Space',
+        tooltip: 'Delete Parking Space 1 OpenCVPoints',
         child: const Icon(Icons.delete),
       ),
       // floatingActionButton: FloatingActionButton(

@@ -33,7 +33,9 @@
       //tplink hotspot mode
       //"applicationUrl": "https://192.168.0.212:3124;https://localhost:7288",
       //new home network
-      "applicationUrl": "https://192.168.1.233:3124;https://localhost:7288",
+      //"applicationUrl": "https://192.168.1.233:3124;https://localhost:7288",
+      //spare Desktop
+      "applicationUrl": "https://192.168.1.102:3124;https://localhost:7288",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

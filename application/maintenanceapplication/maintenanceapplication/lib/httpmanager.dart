@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+//In a production environment, we would probably use an actual domain name and the address wouldn't change.
 final String localUrl = 'https://localhost:7288/api';
 // final String remoteUrl = 'https://192.168.1.31:3124/api';
 // final String remoteUrl = 'https://10.217.52.241:3124/api';
@@ -12,6 +13,7 @@ String staticRemoteUrl = 'https://10.18.31.4:3124';
 final bool isAndroid = Platform.isAndroid;
 final bool isDesktop = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
+//this class is the basic parking spot data, also used by the informational app (the customer-facing parking area display and mobile app)
 class ParkingSpace {
   final int id;
   final int floor;
@@ -34,6 +36,7 @@ class ParkingSpace {
   }
 }
 
+  //this class encompasses both camera and microcontroller raw data
 class PSTotalResults {
   final int id;
   final bool vehicle;
@@ -58,6 +61,7 @@ class PSTotalResults {
   }
 }
 
+//this is the combination of ParkingSpace and PSTotalResults
 class CompleteParkingSpace
 {
   final int id;
@@ -93,6 +97,10 @@ class CompleteParkingSpace
   }
 }
 
+//only used to create a new PsTotalResults object, so that, in turn, we can create a CompleteParkingSpace object.
+//essentially does the reverse of the server - instead of PSTotalResults being used to create a 
+//ParkingSpace object, the ParkingSpace object is being used to create the vehicle status of the
+//PSTotalResults.
 bool convertParkingSpaceToVehicleStatus(ParkingSpace parkingSpace) {
   if (parkingSpace.occupied && !parkingSpace.maintenanceAlert) {
     return true;
@@ -101,6 +109,10 @@ bool convertParkingSpaceToVehicleStatus(ParkingSpace parkingSpace) {
   }
 }
 
+//only used to create a new PsTotalResults object, so that, in turn, we can create a CompleteParkingSpace object.
+//essentially does the reverse of the server - instead of PSTotalResults being used to create a 
+//ParkingSpace object, the ParkingSpace object is being used to create the obstructed of the
+//PSTotalResults.
 bool convertParkingSpaceToObstructedStatus(ParkingSpace parkingSpace) {
   if (!parkingSpace.occupied && parkingSpace.maintenanceAlert) {
     return true;
@@ -115,6 +127,8 @@ Future<List<CompleteParkingSpace>> fetchCompleteParkingSpaces() async {
   final parkingSpaces = await fetchParkingSpaces();
   final psTotalResults = await fetchPSTotalResults();
 
+  //match each PSTotalResults object to its corresponding ParkingSpace. If the PSTotalResults is missing, then create a new one. 
+  //then, create the CompleteParkingSpace with the ParkingSpace and PSTotalResults.
   return parkingSpaces.map((space) {
     final psTotalResult = psTotalResults.firstWhere((result) => result.id == space.id, 
     orElse: () => PSTotalResults(id: space.id, vehicle: convertParkingSpaceToVehicleStatus(space), objectInSpot: space.occupied, parkingSpaceObstructed: convertParkingSpaceToObstructedStatus(space), sensorConnectedToNetwork: false));
@@ -168,6 +182,8 @@ Future<void> createNewParkingSpace() async {
   }
 }
 
+//Currently, this only deletes the four corners of the camera vision boundary of the parking space with Id=1. 
+//Ideally, this could handle any parking space, but it currently only serves the purposes of Demo Day.
 Future<void> deleteOpenCVPoints() async {
   final response = await http.delete(
     Uri.parse('${isAndroid ? remoteUrl : localUrl}/opencvpolygonsitems/1'),
@@ -201,7 +217,7 @@ Future<void> createNewPSFinal(int Id, String vehicle, String objectinspace, Stri
   }
 }
 
-
+// used to send simulated microcontroller data to the server.
 Future<void> addObjectInSpotState(int Id, String objectinspace) async {
   final response = await http.put(
     Uri.parse('${isAndroid ? remoteUrl : localUrl}/objectinspotitems/$Id'),
@@ -219,6 +235,7 @@ Future<void> addObjectInSpotState(int Id, String objectinspace) async {
   }
 }
 
+// used to send simulated camera vision data to the server.
 Future<void> addOpenCVResultState(int Id, String vehicle, String parkingspaceobstructed) async {
   final response = await http.put(
     Uri.parse('${isAndroid ? remoteUrl : localUrl}/opencvresultsitems/$Id'),
