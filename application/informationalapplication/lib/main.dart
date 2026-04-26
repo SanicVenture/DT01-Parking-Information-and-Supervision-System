@@ -8,7 +8,15 @@ import 'package:informationalapplication/httpmanager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/**This application shows parking lot occupancy information to someone who wants to park in a parking area.
+ * This application is fit for desktop and mobile.
+ */
 
+
+ // Here, we are overriding the HttpClient to allow self-signed certificates. This allows us to connect to the
+ // Parking Availability Server, which, not being in production, uses a self-signed certificate. By setting the
+ // badCertificateCallback to always return true, we are effectively telling the HttpClient to accept all certificates,
+ // including self-signed ones. This would be highly unsafe in a production environment.
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
@@ -17,13 +25,14 @@ class MyHttpOverrides extends HttpOverrides {
   }
 }
 
-bool doneRunning = false;
  void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   if (!isDesktop)
-  {  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);}
+  {  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);} // Force portrait mode on mobile devices
 
+
+  //Enables fullscreen on desktop platforms
   if (isDesktop) {
     windowManager.ensureInitialized();
     WindowOptions windowOptions = const WindowOptions (
@@ -39,9 +48,11 @@ bool doneRunning = false;
   HttpOverrides.global = MyHttpOverrides(); // Apply the override
   runApp(MyApp());
 
+  // Attempt to load IP address for Parking Availability Server from shared preferences
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   bool hasKey = prefs.containsKey('remoteIP');
 
+  // If it doesn't exist, create it with the default value.
   if (!hasKey) {
     await prefs.setString('remoteIP', remoteUrl);
   }
@@ -51,17 +62,15 @@ bool doneRunning = false;
       remoteUrl = storedIP;
     }
   }
-
-  doneRunning = true;
 }
 
 class MyApp extends StatelessWidget {
   MyApp({super.key});
 
-  // This widget is the root of your application.
+  // Root of the application
   @override
   Widget build(BuildContext context) {
-    final double textScaleFactor = isDesktop ? 4.5 : 1;
+    final double textScaleFactor = isDesktop ? 4.5 : 1; //Lazy way to make text bigger on desktop
 
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScaleFactor)),
@@ -87,9 +96,8 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-
-bool shownOnce = false;
-
+// Used for setting the server IP Address. In a production environment, either the address for the server
+// would be preprogrammed, or there would be a user friendly list of parking garages.
 class IPRoute extends StatefulWidget {
   IPRoute({super.key});
   
@@ -104,7 +112,7 @@ class _IPRouteState extends State<IPRoute> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: selectedvalue4);
+    _controller = TextEditingController(text: selectedvalue4); // Sets default to saved address
   }
 
   @override
@@ -115,11 +123,6 @@ class _IPRouteState extends State<IPRoute> {
 
   @override
   Widget build(BuildContext context) {
-
-        //     theme: ThemeData(
-        //   colorScheme: .fromSeed(seedColor: const Color.fromARGB(255, 255, 255, 255), brightness: Brightness.dark),
-        //   textTheme: GoogleFonts.overpassTextTheme(Theme.of(context).textTheme)
-        // ),
     return Scaffold(
       body: Center(
         child: Column(
@@ -158,12 +161,12 @@ void saveIP() async {
   prefs.setString('remoteIP', remoteUrl);
 }
 
+bool shownOnce = false;
 class _MyHomePageState extends State<MyHomePage> {
   Timer? _timer;
   late Future<List<ParkingSpace>> futureParkingSpaces;
-  var oldSpaces;
-  bool failure = false;
-
+  late List<ParkingSpace> oldSpaces; //cached parking spaces
+  bool failure = false; //used to check if error message should be shown
 
   @override
   void initState() {
@@ -177,7 +180,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Error fetching data, showing last successful data'),
-                duration: Duration(seconds: 8),
+                duration: Duration(seconds: 3),
               ),
             );
           }
@@ -185,6 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     });
 
+    //Only loads when app is initially launched
     if (!isDesktop && !shownOnce)
     {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -197,24 +201,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   }
 
-  
-
   @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
   }
 
-  void _updateParkingSpots() {
-    setState(() {
-      futureParkingSpaces = fetchParkingSpaces();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       appBar: !isDesktop ? AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
@@ -224,11 +219,11 @@ class _MyHomePageState extends State<MyHomePage> {
         future: futureParkingSpaces,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            failure = false;
+            failure = false; //don't show error message
             final parkingSpaces = snapshot.data!;
-            oldSpaces = parkingSpaces;
-            final List<List<ParkingSpace>> ByFloorList = [];
-            final List<int> AvailablePerFloor = [];
+            oldSpaces = parkingSpaces; //cache parking spaces
+            final List<List<ParkingSpace>> byFloorList = [];
+            final List<int> availablePerFloor = [];
             int maxFloor = 0;
             for (var space in parkingSpaces) {
               if (space.floor > maxFloor) {
@@ -237,32 +232,35 @@ class _MyHomePageState extends State<MyHomePage> {
             }
 
             for (var i = 1; i <= maxFloor; i++) {
-              ByFloorList.add(parkingSpaces.where((space) => space.floor == i).toList());
+              byFloorList.add(parkingSpaces.where((space) => space.floor == i).toList());
             }
 
-            for (var floor in ByFloorList) {
+            for (var floor in byFloorList) {
               final availableCount = floor.where((space) => !space.occupied).length;
-              AvailablePerFloor.add(availableCount);
+              availablePerFloor.add(availableCount);
             }
 
+            //Shows total open spots, and number of open spots per floor.
             return ListView.builder(
-              itemCount: ByFloorList.length + 3,
+              itemCount: byFloorList.length + 3,
               itemBuilder: (context, index) {
                 if (index == 2) {
                   return ListTile(
-                    title: Text('Open Spots: ${AvailablePerFloor.reduce((a, b) => a + b)}', textAlign: TextAlign.center,),
+                    //total open spots
+                    title: Text('Open Spots: ${availablePerFloor.reduce((a, b) => a + b)}', textAlign: TextAlign.center,),
                   );
                 }
                 else if (index == 0)
                 {
                   return Padding(
+                    //logo won't be so close to top of screen
                     padding: EdgeInsetsGeometry.symmetric(vertical: isDesktop ? 44 : 22),
                     child: SizedBox(
-                      height: isDesktop ? 200 : 100,  // Adjust this value to your desired height (e.g., 50-200 pixels)
+                      height: isDesktop ? 200 : 100,
                       child: Image.asset(
                         "assets/images/Akron-Zips-Logo-2008.png",
                         fit: BoxFit.fitHeight,  // Scales to fit within the SizedBox while maintaining aspect ratio
-                        alignment: Alignment.center,  // Center the image; adjust if needed
+                        alignment: Alignment.center,
                       ),
                     )
                   );
@@ -272,27 +270,28 @@ class _MyHomePageState extends State<MyHomePage> {
                   return ListTile(
                     title: Text('Lot 37', textAlign: TextAlign.center,));
                 }
+                //Per floor occupancy. Green means at least one spot is open. Red means it is fully occupied.
                 return ListTile(
                   title: Text(
                     'Floor: ${index-2}', textAlign: TextAlign.center,
-                    style: TextStyle(color: AvailablePerFloor[index - 3] > 0 ? Colors.green : Colors.red)
+                    style: TextStyle(color: availablePerFloor[index - 3] > 0 ? Colors.green : Colors.red)
                   ),
                   subtitle: 
                   Text(
-                    'Open Spots: ${AvailablePerFloor[index - 3]}', 
+                    'Open Spots: ${availablePerFloor[index - 3]}', 
                     textAlign: TextAlign.center, 
-                    style: TextStyle(color: AvailablePerFloor[index - 3] > 0 ? Colors.green : Colors.red),
+                    style: TextStyle(color: availablePerFloor[index - 3] > 0 ? Colors.green : Colors.red),
                   ),
                 );
-
               },
             );
           } else if (snapshot.hasError) {
+            //We will used cached parking spaces in order to at least show some information.
             if (oldSpaces != null)
             {
-              failure = true;
-              final List<List<ParkingSpace>> ByFloorList = [];
-              final List<int> AvailablePerFloor = [];
+              failure = true; //show error message
+              final List<List<ParkingSpace>> byFloorList = [];
+              final List<int> availablePerFloor = [];
               int maxFloor = 0;
               for (var space in oldSpaces) {
                 if (space.floor > maxFloor) {
@@ -301,31 +300,61 @@ class _MyHomePageState extends State<MyHomePage> {
               }
 
               for (var i = 1; i <= maxFloor; i++) {
-                ByFloorList.add(oldSpaces.where((space) => space.floor == i).toList());
+                byFloorList.add(oldSpaces.where((space) => space.floor == i).toList());
               }
 
-              for (var floor in ByFloorList) {
+              for (var floor in byFloorList) {
                 final availableCount = floor.where((space) => !space.occupied).length;
-                AvailablePerFloor.add(availableCount);
+                availablePerFloor.add(availableCount);
               }
 
+
+              //Shows total open spots, and number of open spots per floor.
               return ListView.builder(
-                itemCount: ByFloorList.length + 1,
+                itemCount: byFloorList.length + 3,
                 itemBuilder: (context, index) {
-                  if (index == 0) {
+                  if (index == 2) {
+                    //total open spots
                     return ListTile(
-                      title: Text('Open Spots: ${AvailablePerFloor.reduce((a, b) => a + b)}'),
+                      title: Text('Open Spots: ${availablePerFloor.reduce((a, b) => a + b)}', textAlign: TextAlign.center,),
                     );
                   }
+                  else if (index == 0)
+                  {
+                    return Padding(
+                      //logo won't be so close to top of screen
+                      padding: EdgeInsetsGeometry.symmetric(vertical: isDesktop ? 44 : 22),
+                      child: SizedBox(
+                        height: isDesktop ? 200 : 100,
+                        child: Image.asset(
+                          "assets/images/Akron-Zips-Logo-2008.png",
+                          fit: BoxFit.fitHeight,  // Scales to fit within the SizedBox while maintaining aspect ratio
+                          alignment: Alignment.center,
+                        ),
+                      )
+                    );
+                  }
+                  else if (index == 1)
+                  {
+                    return ListTile(
+                      title: Text('Lot 37', textAlign: TextAlign.center,));
+                  }
+                  //Per floor occupancy. Green means at least one spot is open. Red means it is fully occupied.
                   return ListTile(
-                    title: Text('Floor: ${index}'),
+                    title: Text(
+                      'Floor: ${index-2}', textAlign: TextAlign.center,
+                      style: TextStyle(color: availablePerFloor[index - 3] > 0 ? Colors.green : Colors.red)
+                    ),
                     subtitle: 
                     Text(
-                      'Open Spots: ${AvailablePerFloor[index - 1]}'
-                      ),
+                      'Open Spots: ${availablePerFloor[index - 3]}', 
+                      textAlign: TextAlign.center, 
+                      style: TextStyle(color: availablePerFloor[index - 3] > 0 ? Colors.green : Colors.red),
+                    ),
                   );
+
                 },
-              );              
+              );           
             }
             else
             {
@@ -333,17 +362,10 @@ class _MyHomePageState extends State<MyHomePage> {
             }
 
           }
-
           // By default, show a loading spinner.
           return const Center(child: CircularProgressIndicator());
         },
       ),
-
-      // floatingActionButton: !isDesktop ? FloatingActionButton(
-      //   onPressed: _updateParkingSpots,
-      //   tooltip: 'Reload',
-      //   child: const Icon(Icons.replay),
-      // ) : null,
     );
   }
 }

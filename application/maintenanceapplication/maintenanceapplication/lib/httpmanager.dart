@@ -93,7 +93,7 @@ class CompleteParkingSpace
   }
 }
 
-convertParkingSpaceToVehicleStatus(ParkingSpace parkingSpace) {
+bool convertParkingSpaceToVehicleStatus(ParkingSpace parkingSpace) {
   if (parkingSpace.occupied && !parkingSpace.maintenanceAlert) {
     return true;
   } else {
@@ -101,7 +101,7 @@ convertParkingSpaceToVehicleStatus(ParkingSpace parkingSpace) {
   }
 }
 
-convertParkingSpaceToObstructedStatus(ParkingSpace parkingSpace) {
+bool convertParkingSpaceToObstructedStatus(ParkingSpace parkingSpace) {
   if (!parkingSpace.occupied && parkingSpace.maintenanceAlert) {
     return true;
   } else if (parkingSpace.occupied) {

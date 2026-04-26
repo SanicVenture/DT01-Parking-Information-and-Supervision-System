@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+//In a production environment, we would probably use an actual domain name and the address wouldn't change.
 final String localUrl = 'https://localhost:7288/api';
 // final String remoteUrl = 'https://192.168.1.31:3124/api';
 String remoteUrl = 'https://192.168.50.31:3124/api';
@@ -22,7 +23,7 @@ class ParkingSpace {
     required this.occupied,
     required this.maintenanceAlert,
   });
-
+  
   factory ParkingSpace.fromJson(Map<String, dynamic> json) {
     return switch (json) {
       {'id': int id, 'floor': int floor, 'occupied': bool occupied, 'maintenanceAlert': bool maintenanceAlert} =>

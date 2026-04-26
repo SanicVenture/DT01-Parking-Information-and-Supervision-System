@@ -5,6 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:maintenanceapplication/httpmanager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
+ // Here, we are overriding the HttpClient to allow self-signed certificates. This allows us to connect to the
+ // Parking Availability Server, which, not being in production, uses a self-signed certificate. By setting the
+ // badCertificateCallback to always return true, we are effectively telling the HttpClient to accept all certificates,
+ // including self-signed ones. This would be highly unsafe in a production environment.
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
@@ -14,14 +19,16 @@ class MyHttpOverrides extends HttpOverrides {
 }
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  HttpOverrides.global = MyHttpOverrides();
-    if (!isDesktop)
-  {  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);}
+  HttpOverrides.global = MyHttpOverrides(); // Apply the override
+  if (!isDesktop)
+  {  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);} // Force portrait mode on mobile devices
   runApp(MyApp());
 
+  // Attempt to load IP address for Parking Availability Server from shared preferences
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   bool hasKey = prefs.containsKey('remoteIP');
 
+  // If it doesn't exist, create it with the default value.
   if (!hasKey) {
     await prefs.setString('remoteIP', remoteUrl);
   }
@@ -36,6 +43,8 @@ void main() async{
 
 class MyApp extends StatelessWidget {
   MyApp({super.key});
+
+  // Root of the application
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -464,6 +473,8 @@ class _OpenCVResultRouteState extends State<OpenCVResultRoute> {
   }
 }
 
+// Used for setting the server IP Address. In a production environment, either the address for the server
+// would be preprogrammed, or there would be a user friendly list of parking garages.
 class IPRoute extends StatefulWidget {
   IPRoute({super.key});
   
@@ -530,10 +541,9 @@ class MyHomePage extends StatefulWidget {
 
 bool shownOnce = false;
 class _MyHomePageState extends State<MyHomePage> {
-  // late Future<ParkingSpace> futureParkingSpace;
   late Future<List<CompleteParkingSpace>> futureParkingSpaces;
-  var oldSpaces;
-  bool failure = false;
+  late List<ParkingSpace> oldSpaces; //cached parking spaces
+  bool failure = false; //used to check if error message should be shown
 
   Timer? _timer;
 
@@ -558,7 +568,7 @@ class _MyHomePageState extends State<MyHomePage> {
       });    
     });
 
-
+    //Only loads when app is initially launched
     if (!isDesktop && !shownOnce)
     {
       WidgetsBinding.instance.addPostFrameCallback((_) {
