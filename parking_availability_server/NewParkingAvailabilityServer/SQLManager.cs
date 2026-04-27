@@ -99,7 +99,6 @@ namespace NewParkingAvailabilityServer
             catch (SqliteException e)
             {
 
-
             }
 
             if (checkedItem is null)
