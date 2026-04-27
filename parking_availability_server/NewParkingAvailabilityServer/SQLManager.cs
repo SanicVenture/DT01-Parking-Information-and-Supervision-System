@@ -463,9 +463,5 @@ namespace NewParkingAvailabilityServer
 
             return polygons;
         }
-
     }
-
-
-
 }
