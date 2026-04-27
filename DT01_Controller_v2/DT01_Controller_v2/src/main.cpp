@@ -11,8 +11,8 @@
 #include "stm32f4xx_hal.h"  // Include STM32 HAL header
 #include <stdint.h>
 //#ifdef __cplusplus
-#include <Arduino.h>
-#include "Ethernet_Generic.h"
+#include <Arduino.h> // dependency for ethernet generic library
+#include "Ethernet_Generic.h" // needed for W5500 chip
 //#endif
 //#include "../Core/Inc/main.h" // pin definitions and GPIO ports (project-relative path)
 
@@ -45,19 +45,13 @@ const uint8_t echo = PC0; // PC0
 
 // Ethernet configuration
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
-IPAddress ip(192, 168, 0, 120);
+IPAddress ip(192, 168, 0, 120); // static ip set according to subnet on travel router
 EthernetServer server(80);
 const uint8_t w5500_cs = PB6; // CS for W5500 (wire this pin to W5500 CS)
 
 /* C entry points called from Arduino-compatible C++ wrappers */
 void setup(void)
 {
-  //HAL_Init();
-  // SystemClock_Config();
-
-  /* Initialize GPIOs configured by CubeMX */
-  //MX_GPIO_Init();
-  //HAL_GPIO_Init()
 
   //intialize GPIO pins using Arduino functions
   pinMode(rLED, OUTPUT);
@@ -82,17 +76,13 @@ void setup(void)
   dt01_timer_init();
 
   /* simple LED startup blink */
-  //HAL_GPIO_WritePin(rLED_GPIO_Port, rLED_Pin, GPIO_PIN_SET);
   digitalWrite(rLED,1);
   digitalWrite(gLED,1);
-  //HAL_GPIO_WritePin(gLED_GPIO_Port, gLED_Pin, GPIO_PIN_SET);
-  // replace HAL_Delay with Arduino delay function
   delay(500);
-  // HAL_GPIO_WritePin(rLED_GPIO_Port, rLED_Pin, GPIO_PIN_RESET);
-  // HAL_GPIO_WritePin(gLED_GPIO_Port, gLED_Pin, GPIO_PIN_RESET);
   digitalWrite(rLED,0);
   digitalWrite(gLED,0);
 
+  // initialize variables to zero on start
   app_occupied = 0;
   app_error = 0;
 }
@@ -115,7 +105,7 @@ void loop(void)
   dist = (dist1 + dist2 + dist3 + dist4 + dist5) / 5;
   Serial.print("Distance: ");
   Serial.print(dist);
-  Serial.println(" cm");
+  Serial.println(" cm"); // may not be entirely accurate, thresholds tested experimentally
 
   if (dist <= 50) { // this value was determined experimentally on our test setup, may need to be adjusted for different environments
     digitalWrite(rLED,1);
@@ -210,6 +200,7 @@ static void dt01_timer_init(void)
   }
 
   // Start TIM5 as a free-running 32-bit microsecond counter
+  // possibly edge cases on rollover?
   if (HAL_TIM_Base_Start(&htim5) != HAL_OK) {
     app_error = 1;
   }
@@ -238,6 +229,7 @@ static inline uint32_t dt01_micros(void)
   return (uint32_t)TIM5->CNT;
 }
 
+// there's probably an Arduino function to do this...
 static void dt01_delay_us(uint32_t us)
 {
   uint32_t start = dt01_micros();
@@ -281,6 +273,7 @@ int calc_dist(void)
   uint32_t t_end = dt01_micros();
 
   timer = (t_end - t_start);
+  // distance measurement may not be completely accurate, tested experimentally
   distance = (unsigned long)(timer / 58.82);
 
   return (int)distance;
