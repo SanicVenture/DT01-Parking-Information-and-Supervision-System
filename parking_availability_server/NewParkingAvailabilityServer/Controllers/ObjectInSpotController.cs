@@ -14,15 +14,14 @@ namespace NewParkingAvailabilityServer.Controllers
     public class ObjectInSpotController : ControllerBase
     {
         private readonly ObjectInSpotContext _context;
-
         private SQLManager sqlManager = new SQLManager();
-
         public ObjectInSpotController(ObjectInSpotContext context)
         {
             _context = context;
         }
 
         // GET: api/objectinspotitems
+        // can probably be removed
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ObjectInSpotItem>>> GetObjectInSpotItems()
         {
@@ -30,6 +29,7 @@ namespace NewParkingAvailabilityServer.Controllers
         }
 
         // GET: api/objectinspotitems/id
+        // can probably be removed
         [HttpGet("{id}")]
         public async Task<ActionResult<ObjectInSpotItem>> GetObjectInSpotItem(long id)
         {
@@ -44,7 +44,7 @@ namespace NewParkingAvailabilityServer.Controllers
         }
 
         // PUT: api/objectinspotitems/id
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // just for testing
         [HttpPut("{id}")]
         public async Task<IActionResult> PutObjectInSpotItem(long id, ObjectInSpotItem todoItem)
         {
@@ -76,13 +76,13 @@ namespace NewParkingAvailabilityServer.Controllers
                 }
             }
 
-            sqlManager.CheckForOpenCVData(id);
+            sqlManager.CheckForOpenCVData(id); //will create a complete parking space if there is OpenCV data present
 
             return NoContent();
         }
 
         // POST: api/objectinspotitems
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // can probably be removed
         [HttpPost]
         public async Task<ActionResult<ObjectInSpotItem>> PostObjectInSpotItem(ObjectInSpotItem todoItem)
         {
@@ -93,6 +93,7 @@ namespace NewParkingAvailabilityServer.Controllers
         }
 
         // DELETE: api/objectinspotitems/id
+        // can probably be removed
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteObjectInSpotItem(long id)
         {

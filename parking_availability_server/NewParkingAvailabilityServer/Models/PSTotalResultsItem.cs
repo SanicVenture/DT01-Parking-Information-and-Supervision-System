@@ -6,8 +6,8 @@ namespace NewParkingAvailabilityServer.Models
     {
         public int Id { get; set; } = -1;
         public bool vehicle { get; set; }
-        public bool objectInSpot { get; set; }
-        public bool parkingSpaceObstructed { get; set; }
+        public bool objectInSpot { get; set; } //determined from microcontroller
+        public bool parkingSpaceObstructed { get; set; } //for a visually obstructed parking space; this is only determined from camera vision
         public bool sensorConnectedToNetwork { get; set; } = true;
 
 
@@ -38,7 +38,7 @@ namespace NewParkingAvailabilityServer.Models
 
         public void convertPSTotalResultsItem()
         {
-            bool maintenanceState = false;
+            bool maintenanceState = false; //whether there is something wrong with the spot or not
 
             if (objectInSpot)
             {
@@ -49,6 +49,7 @@ namespace NewParkingAvailabilityServer.Models
                 maintenanceState = parkingSpaceObstructed;
             }
 
+            //ParkingSpaceItem which is used for customer-facing app and the display
             convertedSpot = new ParkingSpaceItem(
                 Id,
                 -1,

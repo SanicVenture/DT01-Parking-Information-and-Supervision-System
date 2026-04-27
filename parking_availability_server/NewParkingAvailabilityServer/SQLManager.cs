@@ -74,7 +74,7 @@ namespace NewParkingAvailabilityServer
         //called by the OpenCVResultsController
         public async Task CheckForMicrocontrollerData(long id)
         {
-            ObjectInSpotItem? checkedItem = null;
+            ObjectInSpotItem? checkedItem = null; //microcontroller data
             try
             {
                 using (var conn = new SqliteConnection(objectinspotconnectionString))
@@ -102,11 +102,9 @@ namespace NewParkingAvailabilityServer
 
             }
 
-
-            //change this to be if it is null, then continue the code!
-
             if (checkedItem is null)
             {
+                //we need to grab fresh data from the microcontroller.
                 try
                 {
                     if (microcontrollerON)
@@ -128,7 +126,7 @@ namespace NewParkingAvailabilityServer
                         checkedItem = new ObjectInSpotItem(
                             id, 
                             true,
-                            2
+                            2 //2 is the error code for a disconnected microcontroller
                         );
 
                     }
@@ -146,11 +144,9 @@ namespace NewParkingAvailabilityServer
                 }
             }
 
-
-            //add error state to table!!!
             if (checkedItem is not null)
             {
-                OpenCVResultsItem? openCVCorrespondingItem = null;
+                OpenCVResultsItem? openCVCorrespondingItem = null; //results of the YOLO object detection model
                 using (var conn = new SqliteConnection(openCVConnectionString))
                 {
                     conn.Open();
@@ -187,6 +183,7 @@ namespace NewParkingAvailabilityServer
 
                 PSTotalResultsItem currentItem = new PSTotalResultsItem(openCVCorrespondingItem, checkedItem);
 
+                //if currentItem is essentially not null
                 if (currentItem.Id != -1)
                 {
                     try
@@ -229,11 +226,15 @@ namespace NewParkingAvailabilityServer
 
                     try
                     {
+                        //microcontrollerON is a variable basically just for quick debugging of features when a microcontroller is not on the network.
+                        //in production, it would not exist.
                         if (microcontrollerON)
                         {
-                            var test = JsonConvert.SerializeObject(Convert.ToInt64(currentItem.convertedSpot.maintenanceAlert));
+                            //here, we send the microcontroller the error code so that it can turn on the appropriate LED. The microcontroller only cares about the error code, so that's all we send it.
+
+                            var errorState = JsonConvert.SerializeObject(Convert.ToInt64(currentItem.convertedSpot.maintenanceAlert));
                             var http = new HttpClient();
-                            var content = new StringContent(test, System.Text.Encoding.UTF8, "text/plain");
+                            var content = new StringContent(errorState, System.Text.Encoding.UTF8, "text/plain");
                             var response = await http.PostAsync(microcontrollerIP + "error", content);
                             string json = await response.Content.ReadAsStringAsync();
                         }
@@ -346,6 +347,7 @@ namespace NewParkingAvailabilityServer
             }
         }
 
+        //just for testing
         public async Task createnewPSTotalEntry(PSTotalResultsItem todoItem)
         {
             try
@@ -368,6 +370,7 @@ namespace NewParkingAvailabilityServer
             }
         }
 
+        //Saving the results of the YOLO object detection model to the database. Primarly used in OpenCVManager.
         public async Task CreateNewOpenCVResultsEntry(OpenCVResultsItem todoItem) //fix this so that it can check if an object exists already. Gotta have maximum safety.
         {
             try
@@ -389,6 +392,7 @@ namespace NewParkingAvailabilityServer
             }
         }
 
+        //just for testing
         public async Task createNewObjectInSpotEntry(ObjectInSpotItem todoItem)
         {
             try
@@ -409,16 +413,9 @@ namespace NewParkingAvailabilityServer
             }
         }
 
-        //add a thing where we jsonify the polygons and save them in the sql table.
-
+        //Saves the boundaries of the parking space created by the user.
         public async Task createNewPolygonEntry(OpenCvSharp.Point[][] todoItem, int Id)
         {
-
-            
-            //OpenCVPolygonsItem newItem = new OpenCVPolygonsItem(
-            //    Id,
-            //    jsonPolygons
-            //);
             try
             {
                 using (var conn = new SqliteConnection(opencvpolygonsconnectionString))
@@ -438,6 +435,7 @@ namespace NewParkingAvailabilityServer
             }
         }
 
+        //Retrieves the boundaries of the parking space created by the user.
         public OpenCvSharp.Point[][] OpenPolygonEntry(int Id)
         {
             OpenCvSharp.Point[][]? polygons = null;

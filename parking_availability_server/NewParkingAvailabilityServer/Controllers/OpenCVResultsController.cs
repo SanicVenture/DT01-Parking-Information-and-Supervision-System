@@ -44,7 +44,7 @@ namespace NewParkingAvailabilityServer.Controllers
         }
 
         // PUT: api/OpenCVResultsItems/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // Mostly exists just for testing
         [HttpPut("{id}")]
         public async Task<IActionResult> PutOpenCVResultsItem(long id, OpenCVResultsItem todoItem)
         {
@@ -76,20 +76,9 @@ namespace NewParkingAvailabilityServer.Controllers
                 }
             }
 
-            sQLManager.CheckForMicrocontrollerData(id);
+            sQLManager.CheckForMicrocontrollerData(id); //done to create a complete parking space if there is microcontroller data present
 
             return NoContent();
-        }
-
-        // POST: api/OpenCVResultsItems
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<OpenCVResultsItem>> PostOpenCVResultsItem(OpenCVResultsItem todoItem)
-        {
-            _context.OpenCVResultsItems.Add(todoItem);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetOpenCVResultsItem), new { id = todoItem.Id }, todoItem);
         }
 
         // DELETE: api/OpenCVResultsItems/5

@@ -2,6 +2,7 @@
 {
     public class OpenCVResultsItem
     {
+        // All data from YOLO object detection.
         public int Id { get; set; }
         public bool vehicle { get; set; }
         public bool parkingSpaceObstructed { get; set; }
