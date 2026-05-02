@@ -683,11 +683,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 final space = parkingSpaces[index];
                 final styleoftext = TextStyle(
                     fontWeight: FontWeight.bold,
-                    //If the microcontroller is offline, the entry is colored orange. If there is something wrong with the spot, then it is red. Otherwise, it is black.
-                    color: space.sensorConnectedToNetwork ? (space.maintenanceAlert ? Colors.red : Colors.black) : const Color.fromARGB(255, 238, 184, 104),
+                    //If the microcontroller is offline, the entry is colored orange. If there is something wrong with
+                    // the spot, then it is red. Otherwise, it is black.
+                    color: space.sensorConnectedToNetwork ?
+                      (space.maintenanceAlert ? Colors.red : Colors.black) : const Color.fromARGB(255, 238, 184, 104),
                   );
                 //if there is a way for the detection images to not be static images, then it should be changed.
-                final imageURL = '${isAndroid ? staticRemoteUrl : staticLocalUrl}/images/output_frame_with_detections_${space.id}.png';
+                final imageURL =
+                 '${isAndroid ? staticRemoteUrl : staticLocalUrl}/images/output_frame_with_detections_${space.id}.png';
                 final provider = NetworkImage(imageURL);
                 //done to guarantee image is actually updated
                 provider.evict();
@@ -697,7 +700,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   subtitle: Text('Floor: ${space.floor}, Occupied: ${space.occupied}', style: styleoftext),
                   children: <Widget>[
                     Text('Is the Object a Vehicle: ${space.vehicleStatus}', style: styleoftext),
-                    space.sensorConnectedToNetwork ? Text('Object in Spot According To Sensor: ${space.objectInSpot}', style: styleoftext) : Text('Sensor Not Connected', style: styleoftext),
+                    space.sensorConnectedToNetwork ?
+                     Text('Object in Spot According To Sensor: ${space.objectInSpot}', style: styleoftext) : 
+                     Text('Sensor Not Connected', style: styleoftext),
                     Text('Parking Space Occupied According To Camera: ${space.parkingSpaceObstructed}', style: styleoftext),
                     Text('YOLO Detections:', style: styleoftext),
                     Image(
@@ -751,10 +756,9 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             );
             }
-            else{
+            else {
               return Center(child: Text('${snapshot.error}'));
             }
-
           }
           return const Center(child: CircularProgressIndicator());
         },

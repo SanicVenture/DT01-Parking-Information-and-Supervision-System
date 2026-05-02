@@ -13,7 +13,8 @@ String staticRemoteUrl = 'https://10.18.31.4:3124';
 final bool isAndroid = Platform.isAndroid;
 final bool isDesktop = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
-//this class is the basic parking spot data, also used by the informational app (the customer-facing parking area display and mobile app)
+//this class is the basic parking spot data, also used by the informational app (the customer-facing parking area display
+// and mobile app)
 class ParkingSpace {
   final int id;
   final int floor;
@@ -54,8 +55,16 @@ class PSTotalResults {
 
   factory PSTotalResults.fromJson(Map<String, dynamic> json) {
     return switch (json) {
-      {'id': int id, 'vehicle': bool vehicle, 'objectInSpot': bool objectInSpot, 'parkingSpaceObstructed': bool parkingSpaceObstructed, 'sensorConnectedToNetwork': bool sensorConnectedToNetwork} =>
-        PSTotalResults(id: id, vehicle: vehicle, objectInSpot: objectInSpot, parkingSpaceObstructed: parkingSpaceObstructed, sensorConnectedToNetwork: sensorConnectedToNetwork),
+      {'id': int id, 
+      'vehicle': bool vehicle, 
+      'objectInSpot': bool objectInSpot, 
+      'parkingSpaceObstructed': bool parkingSpaceObstructed, 
+      'sensorConnectedToNetwork': bool sensorConnectedToNetwork} =>
+        PSTotalResults(id: id, 
+          vehicle: vehicle, 
+          objectInSpot: objectInSpot, 
+          parkingSpaceObstructed: parkingSpaceObstructed, 
+          sensorConnectedToNetwork: sensorConnectedToNetwork),
       _ => throw Exception('Invalid JSON format for PSTotalResults'),
     };
   }
@@ -83,7 +92,9 @@ class CompleteParkingSpace
     required this.sensorConnectedToNetwork,
   });
 
-  factory CompleteParkingSpace.fromParkingSpaceAndPSTotalResults(ParkingSpace parkingSpace, PSTotalResults psTotalResults) {
+  factory CompleteParkingSpace.fromParkingSpaceAndPSTotalResults(
+    ParkingSpace parkingSpace, 
+    PSTotalResults psTotalResults) {
     return CompleteParkingSpace(
       id: parkingSpace.id,
       floor: parkingSpace.floor,
@@ -127,11 +138,16 @@ Future<List<CompleteParkingSpace>> fetchCompleteParkingSpaces() async {
   final parkingSpaces = await fetchParkingSpaces();
   final psTotalResults = await fetchPSTotalResults();
 
-  //match each PSTotalResults object to its corresponding ParkingSpace. If the PSTotalResults is missing, then create a new one. 
+  //match each PSTotalResults object to its corresponding ParkingSpace. If the PSTotalResults is missing, then create a
+  //new one. 
   //then, create the CompleteParkingSpace with the ParkingSpace and PSTotalResults.
   return parkingSpaces.map((space) {
-    final psTotalResult = psTotalResults.firstWhere((result) => result.id == space.id, 
-    orElse: () => PSTotalResults(id: space.id, vehicle: convertParkingSpaceToVehicleStatus(space), objectInSpot: space.occupied, parkingSpaceObstructed: convertParkingSpaceToObstructedStatus(space), sensorConnectedToNetwork: false));
+    final psTotalResult = psTotalResults.firstWhere((result) => result.id == space.id, orElse: () => PSTotalResults(
+      id: space.id, 
+      vehicle: convertParkingSpaceToVehicleStatus(space), 
+      objectInSpot: space.occupied, 
+      parkingSpaceObstructed: convertParkingSpaceToObstructedStatus(space), 
+      sensorConnectedToNetwork: false));
     return CompleteParkingSpace.fromParkingSpaceAndPSTotalResults(space, psTotalResult);
   }).toList();
 }
